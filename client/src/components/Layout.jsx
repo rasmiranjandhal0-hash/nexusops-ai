@@ -17,7 +17,7 @@ export default function Layout() {
         <div className="absolute top-1/2 -right-20 w-[450px] h-[450px] rounded-full bg-cyan-500/8 blur-[140px] pointer-events-none" />
         
         {/* 3D Wireframe Scene */}
-        <div className="absolute inset-0 opacity-25">
+        <div className="absolute inset-0 opacity-30">
           <Suspense fallback={null}>
             <GenerativeArtScene />
           </Suspense>

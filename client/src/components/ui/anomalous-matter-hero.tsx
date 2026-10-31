@@ -14,31 +14,38 @@ export function GenerativeArtScene() {
     const height = currentMount.clientHeight || window.innerHeight;
 
     const camera = new THREE.PerspectiveCamera(
-      75,
+      70,
       width / height,
       0.1,
       1000
     );
-    camera.position.z = 3;
+    camera.position.z = 3.2;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     currentMount.appendChild(renderer.domElement);
 
-    const geometry = new THREE.IcosahedronGeometry(1.2, 64);
+    // Root 3D assembly group for global floating, rotation, and mouse parallax
+    const assemblyGroup = new THREE.Group();
+    scene.add(assemblyGroup);
+
+    // 1. Primary Morphing 3D Sphere (White <-> Grey <-> White transition)
+    const geometry = new THREE.IcosahedronGeometry(1.25, 64);
     const material = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
-        pointLightPos: { value: new THREE.Vector3(0, 0, 5) },
-        color: { value: new THREE.Color(0x38bdf8) }, // Sky 300 / 400 phosphor
+        pointLightPosition: { value: new THREE.Vector3(0, 0, 5) },
+        color: { value: new THREE.Color(0xffffff) },
+        colorCycle: { value: 1.0 }, // 1.0 = white, 0.0 = grey
       },
       vertexShader: `
         uniform float time;
         varying vec3 vNormal;
         varying vec3 vPosition;
+        varying float vNoise;
         
-        // Perlin Noise function
+        // Simplex/Perlin noise implementation
         vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
         vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
         vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
@@ -89,7 +96,11 @@ export function GenerativeArtScene() {
         void main() {
             vNormal = normal;
             vPosition = position;
-            float displacement = snoise(position * 2.0 + time * 0.5) * 0.2;
+            // Harmonic 3D wave morphing across the surface
+            float noiseA = snoise(position * 1.8 + vec3(time * 0.45, time * 0.35, time * 0.4));
+            float noiseB = snoise(position * 3.0 - vec3(time * 0.25, time * 0.4, time * 0.3));
+            float displacement = (noiseA * 0.18 + noiseB * 0.07);
+            vNoise = displacement;
             vec3 newPosition = position + normal * displacement;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
         }
@@ -97,21 +108,32 @@ export function GenerativeArtScene() {
       fragmentShader: `
         uniform vec3 color;
         uniform vec3 pointLightPosition;
+        uniform float colorCycle;
         varying vec3 vNormal;
         varying vec3 vPosition;
+        varying float vNoise;
         
         void main() {
             vec3 normal = normalize(vNormal);
             vec3 lightDir = normalize(pointLightPosition - vPosition);
-            float diffuse = max(dot(normal, lightDir), 0.0);
+            float diffuse = max(dot(normal, lightDir), 0.15);
             
-            // Fresnel effect for the glow
-            float fresnel = 1.0 - dot(normal, vec3(0.0, 0.0, 1.0));
-            fresnel = pow(fresnel, 2.0);
+            // Optical Fresnel effect for glowing perimeter
+            float fresnel = 1.0 - abs(dot(normal, vec3(0.0, 0.0, 1.0)));
+            fresnel = pow(fresnel, 2.2);
             
-            vec3 finalColor = color * diffuse + color * fresnel * 0.5;
+            // Specular metallic sheen
+            vec3 viewDir = normalize(-vPosition);
+            vec3 halfVector = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(normal, halfVector), 0.0), 28.0);
             
-            gl_FragColor = vec4(finalColor, 1.0);
+            // Interpolate highlights between sleek metallic chrome and pure radiant white
+            vec3 highlight = mix(vec3(0.72, 0.74, 0.78), vec3(1.0, 1.0, 1.0), colorCycle);
+            vec3 finalColor = color * (diffuse * 0.65 + 0.35) + highlight * (fresnel * 0.75 + spec * 0.45);
+            
+            // Dynamic alpha modulation
+            float alpha = clamp(0.35 + fresnel * 0.55 + diffuse * 0.2, 0.0, 0.95);
+            gl_FragColor = vec4(finalColor, alpha);
         }
       `,
       wireframe: true,
@@ -119,18 +141,132 @@ export function GenerativeArtScene() {
     });
 
     const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
+    assemblyGroup.add(mesh);
 
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    // 2. Counter-Rotating Inner 3D Lattice Core (Adds Multi-Layer Parallax Depth)
+    const innerGeometry = new THREE.IcosahedronGeometry(0.72, 16);
+    const innerMaterial = new THREE.MeshStandardMaterial({
+      color: 0xcccccc,
+      metalness: 0.85,
+      roughness: 0.25,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.45,
+    });
+    const innerMesh = new THREE.Mesh(innerGeometry, innerMaterial);
+    assemblyGroup.add(innerMesh);
+
+    // 3. Tilted 3D Celestial Gyroscope Rings
+    const ring1Geometry = new THREE.TorusGeometry(1.68, 0.006, 16, 120);
+    const ring1Material = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.4,
+    });
+    const ring1 = new THREE.Mesh(ring1Geometry, ring1Material);
+    ring1.rotation.x = Math.PI * 0.32;
+    ring1.rotation.y = Math.PI * 0.18;
+    assemblyGroup.add(ring1);
+
+    const ring2Geometry = new THREE.TorusGeometry(1.92, 0.005, 16, 120);
+    const ring2Material = new THREE.MeshBasicMaterial({
+      color: 0x888888,
+      transparent: true,
+      opacity: 0.3,
+    });
+    const ring2 = new THREE.Mesh(ring2Geometry, ring2Material);
+    ring2.rotation.x = -Math.PI * 0.38;
+    ring2.rotation.z = Math.PI * 0.22;
+    assemblyGroup.add(ring2);
+
+    // 4. Floating 3D Starfield / Quantum Dust Particles
+    const particleCount = 140;
+    const particlePositions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount; i++) {
+      const radius = 1.45 + Math.random() * 1.25;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(Math.random() * 2 - 1);
+      particlePositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+      particlePositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      particlePositions[i * 3 + 2] = radius * Math.cos(phi);
+    }
+    const particleGeometry = new THREE.BufferGeometry();
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    const particleMaterial = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.022,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+    });
+    const particles = new THREE.Points(particleGeometry, particleMaterial);
+    assemblyGroup.add(particles);
+
+    // Dynamic 3D Point Light
+    const pointLight = new THREE.PointLight(0xffffff, 1.2, 100);
     pointLight.position.set(0, 0, 5);
     lightRef.current = pointLight;
     scene.add(pointLight);
 
+    // Mouse Parallax coordinates (smoothed via damping)
+    let targetRotationX = 0;
+    let targetRotationY = 0;
+
+    // Palette definition for cycling:
+    // Pure Bright White (0xffffff) <---> Sophisticated Metallic Slate Grey (0x64748b / 0x71717a)
+    const whiteColor = new THREE.Color(0xffffff);
+    const greyColor = new THREE.Color(0x6b7280); // refined silver-slate grey
+    const currentColor = new THREE.Color();
+
     let frameId: number;
     const animate = (t: number) => {
-      material.uniforms.time.value = t * 0.0003;
-      mesh.rotation.y += 0.0005;
-      mesh.rotation.x += 0.0002;
+      // 1. Continuous smooth color cycle: White -> Grey -> White again
+      // Frequency: smooth undulating cycle every ~6.2 seconds
+      const cycle = (Math.sin(t * 0.001) + 1.0) * 0.5; // Oscillates smoothly between 0.0 and 1.0
+      currentColor.lerpColors(greyColor, whiteColor, cycle);
+
+      material.uniforms.color.value.copy(currentColor);
+      material.uniforms.colorCycle.value = cycle;
+      innerMaterial.color.copy(currentColor);
+      ring1Material.color.copy(currentColor);
+      ring2Material.color.copy(currentColor);
+      particleMaterial.color.copy(currentColor);
+
+      // 2. Vertex wave time update
+      material.uniforms.time.value = t * 0.00035;
+
+      // 3. Multi-Axis 3D Precession and Rotation
+      mesh.rotation.y = t * 0.00055 + Math.sin(t * 0.0003) * 0.18;
+      mesh.rotation.x = t * 0.0003 + Math.cos(t * 0.0004) * 0.12;
+      mesh.rotation.z = Math.sin(t * 0.0002) * 0.08;
+
+      // 4. Counter-rotation for inner core (creates pronounced 3D parallax)
+      innerMesh.rotation.y = -t * 0.0007;
+      innerMesh.rotation.x = -t * 0.0004;
+      innerMesh.rotation.z = t * 0.0003;
+
+      // 5. Gyroscopic rings orbit on tilted planes
+      ring1.rotation.z += 0.001;
+      ring1.rotation.y += 0.0006;
+      ring2.rotation.z -= 0.0009;
+      ring2.rotation.x += 0.0005;
+
+      // 6. Particle swarm rotation
+      particles.rotation.y = t * 0.00025;
+      particles.rotation.x = t * 0.00015;
+
+      // 7. Harmonic 3D Levitation (Floating & Breathing Pulse)
+      assemblyGroup.position.y = Math.sin(t * 0.0011) * 0.14;
+      assemblyGroup.position.x = Math.cos(t * 0.0008) * 0.08;
+      assemblyGroup.position.z = Math.sin(t * 0.0006) * 0.1;
+
+      const breathingScale = 1.0 + Math.sin(t * 0.0014) * 0.055;
+      mesh.scale.set(breathingScale, breathingScale, breathingScale);
+
+      // 8. Smooth Interactive 3D Mouse Parallax
+      assemblyGroup.rotation.y += (targetRotationY - assemblyGroup.rotation.y) * 0.04;
+      assemblyGroup.rotation.x += (targetRotationX - assemblyGroup.rotation.x) * 0.04;
+
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(animate);
     };
@@ -140,7 +276,7 @@ export function GenerativeArtScene() {
       if (!currentMount) return;
       const w = currentMount.clientWidth;
       const h = currentMount.clientHeight;
-      if (h === 0) return;
+      if (h === 0 || w === 0) return;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -149,6 +285,9 @@ export function GenerativeArtScene() {
     const handleMouseMove = (e: MouseEvent) => {
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = -(e.clientY / window.innerHeight) * 2 + 1;
+      targetRotationY = x * 0.35;
+      targetRotationX = -y * 0.25;
+
       const vec = new THREE.Vector3(x, y, 0.5).unproject(camera);
       const dir = vec.sub(camera.position).normalize();
       const dist = -camera.position.z / dir.z;
@@ -156,7 +295,7 @@ export function GenerativeArtScene() {
       if (lightRef.current) {
         lightRef.current.position.copy(pos);
       }
-      material.uniforms.pointLightPos.value = pos;
+      material.uniforms.pointLightPosition.value = pos;
     };
 
     window.addEventListener("resize", handleResize);
@@ -171,6 +310,14 @@ export function GenerativeArtScene() {
       }
       geometry.dispose();
       material.dispose();
+      innerGeometry.dispose();
+      innerMaterial.dispose();
+      ring1Geometry.dispose();
+      ring1Material.dispose();
+      ring2Geometry.dispose();
+      ring2Material.dispose();
+      particleGeometry.dispose();
+      particleMaterial.dispose();
       renderer.dispose();
     };
   }, []);
@@ -190,17 +337,17 @@ export function AnomalousMatterHero({
   return (
     <section
       role="banner"
-      className="relative w-full h-screen bg-black text-white overflow-hidden"
+      className="relative w-full h-screen bg-[#030306] text-white overflow-hidden"
     >
-      <Suspense fallback={<div className="w-full h-full bg-black" />}>
+      <Suspense fallback={<div className="w-full h-full bg-[#030306]" />}>
         <GenerativeArtScene />
       </Suspense>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#030306] via-[#030306]/60 to-transparent z-10 pointer-events-none" />
 
       <div className="relative z-20 flex flex-col items-center justify-end h-full pb-20 md:pb-32 text-center pointer-events-none">
         <div className="max-w-3xl px-4 animate-fade-in-long pointer-events-auto">
-          <h1 className="text-xs sm:text-sm font-mono tracking-widest text-sky-300 uppercase">
+          <h1 className="text-xs sm:text-sm font-mono tracking-widest text-slate-300 uppercase">
             {title}
           </h1>
           <p className="mt-4 text-3xl md:text-5xl font-bold leading-tight tracking-tight text-white">
@@ -216,4 +363,3 @@ export function AnomalousMatterHero({
 }
 
 export default AnomalousMatterHero;
-

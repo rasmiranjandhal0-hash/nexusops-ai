@@ -27,7 +27,7 @@ export default function LandingPage() {
         {/* Electric Cyan touch orb */}
         <div className="absolute top-1/2 -right-24 w-[450px] h-[450px] rounded-full bg-cyan-500/10 blur-[130px]" />
         {/* 3D Wireframe Scene */}
-        <div className="absolute inset-0 opacity-25">
+        <div className="absolute inset-0 opacity-40">
           <Suspense fallback={null}>
             <GenerativeArtScene />
           </Suspense>
