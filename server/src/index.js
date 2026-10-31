@@ -62,6 +62,27 @@ const aiOrchestrateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Root welcome endpoint (prevents 404 when visiting base domain or Render health check)
+app.get('/', (req, res) => {
+  return res.json({
+    status: 'ONLINE',
+    service: 'NexusOps AI Autonomous Multi-Agent Orchestration Engine',
+    documentation: '/api/health',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      workspaces: '/api/workspaces',
+      missions: '/api/missions',
+      dashboard: '/api/dashboard',
+    },
+  });
+});
+
+app.get('/health', (req, res) => {
+  return res.redirect('/api/health');
+});
+
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
   const dbStatus = await testConnection();
@@ -96,6 +117,12 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/missions', missionRoutes);
+
+// Direct alias for DELETE /api/systems/:systemId
+app.delete('/api/systems/:systemId', (req, res, next) => {
+  req.url = `/systems/${req.params.systemId}`;
+  return workspaceRoutes(req, res, next);
+});
 
 // Global centralized error handler
 app.use(errorHandler);
