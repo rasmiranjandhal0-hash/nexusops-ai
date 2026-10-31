@@ -42,6 +42,35 @@
   box-shadow: 0 0 35px -5px rgba(56, 189, 248, 0.3);
 }
 
+/* Warm Golden Lamp Glass Card */
+.glass-panel-lamp-gold {
+  background: rgba(12, 10, 6, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  box-shadow: -20px 0 50px -10px rgba(245, 158, 11, 0.25), 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(254, 243, 199, 0.15);
+}
+
+/* Cyan Lamp Glass Card */
+.glass-panel-lamp-cyan {
+  background: rgba(4, 12, 20, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: -20px 0 50px -10px rgba(56, 189, 248, 0.25), 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(186, 230, 253, 0.15);
+}
+
+/* Volumetric Conical Light Beams */
+.light-beam-cone-gold {
+  clip-path: polygon(0% 0%, 28% 0%, 100% 100%, 0% 100%);
+  background: radial-gradient(ellipse at 12% 0%, rgba(254, 243, 199, 0.85) 0%, rgba(245, 158, 11, 0.45) 30%, rgba(217, 119, 6, 0.15) 65%, transparent 100%);
+}
+
+.light-beam-cone-cyan {
+  clip-path: polygon(0% 0%, 28% 0%, 100% 100%, 0% 100%);
+  background: radial-gradient(ellipse at 12% 0%, rgba(224, 242, 254, 0.85) 0%, rgba(56, 189, 248, 0.45) 30%, rgba(14, 165, 233, 0.15) 65%, transparent 100%);
+}
+
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
@@ -58,6 +87,7 @@
   background: #38bdf8;
 }
 
+/* Keyframe Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -71,4 +101,34 @@
 
 .animate-fade-in-long {
   animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cordPull {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(18px); }
+  70% { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-cord-pull {
+  animation: cordPull 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.8);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translateY(-45px) translateX(15px) scale(1.1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-90px) translateX(-10px) scale(0.6);
+    opacity: 0;
+  }
+}
+
+.particle-float {
+  animation: floatParticle 5s infinite ease-in-out;
 }

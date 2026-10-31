@@ -46,6 +46,12 @@ export default function LandingPage() {
 
         <div className="flex items-center space-x-3">
           <Link
+            to="/login"
+            className="text-xs font-mono text-amber-300 hover:text-amber-200 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-400/30 transition-colors flex items-center space-x-1"
+          >
+            <span>Sign In</span>
+          </Link>
+          <Link
             to="/dashboard"
             className="text-xs font-mono text-slate-300 hover:text-white px-3 py-1.5 transition-colors"
           >
