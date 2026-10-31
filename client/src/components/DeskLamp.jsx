@@ -260,3 +260,4 @@ export default function DeskLamp({ isOn, onToggle, isFocused, mode = 'gold' }) {
     </div>
   );
 }
+

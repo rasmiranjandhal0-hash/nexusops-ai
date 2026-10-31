@@ -95,3 +95,4 @@ VALUES
   ('SCN-9018', 'Employee Onboarding Document Excerpt', 'MEDIUM', 45, 190, '["Personal Email", "Phone Number"]'::jsonb, false, 'Reviewed'),
   ('SCN-9017', 'Security Audit Documentation Q4', 'LOW', 8, 340, '["Clean Operational Text"]'::jsonb, false, 'Clean')
 ON CONFLICT (id) DO NOTHING;
+

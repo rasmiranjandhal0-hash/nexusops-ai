@@ -4,49 +4,54 @@ PRIVACYGUARD AI is a zero-persistence privacy and threat inspection platform. It
 
 ---
 
-## Architecture Overview
+## Architecture & Deployment Setup
 
-- **Frontend:** React 18, Vite, React Router DOM, Tailwind CSS, Lucide React, Axios.
-- **Backend:** Node.js, Express, CORS, Zero-Persistence Privacy Heuristics Engine.
-- **Security:** Raw text inputs are never saved, persisted, or logged to disk or database. Masked examples only are returned.
+- **Backend (Render):** Node.js + Express in `/server` (Root Directory on Render: `server`).
+- **Frontend (Vercel):** React 18 + Vite + Tailwind CSS in `/client` (Root Directory on Vercel: `client`).
+- **Zero-Persistence Guarantee:** Raw text inputs are strictly evaluated in volatile memory and never persisted or logged.
 
 ---
 
 ## Directory Structure
 
 ```text
-├── backend/
+├── server/                                # Render Web Service (Root: server)
 │   ├── src/
 │   │   ├── controllers/
 │   │   │   └── analysisController.js      # Input validation & response generation
 │   │   ├── middleware/
-│   │   │   └── errorHandler.js            # Secure error handler without data leaks
+│   │   │   └── errorHandler.js            # Leak-safe error handler
 │   │   ├── routes/
 │   │   │   └── analysisRoutes.js          # POST /api/analyze router
 │   │   ├── services/
-│   │   │   └── privacyAnalysisService.js  # Regex & heuristic privacy inspector
-│   │   └── server.js                      # Express application entrypoint
-│   ├── .env.example                       # Port and future AI API key placeholder
+│   │   │   └── privacyAnalysisService.js  # Heuristic privacy inspection engine
+│   │   ├── server.js                      # Express application entrypoint
+│   │   └── index.js                       # Module redirect to server.js
+│   ├── .env.example                       # Port & future AI API key placeholder
 │   └── package.json
 │
-├── client/
+├── client/                                # Vercel Web App (Root: client)
 │   ├── src/
-│   │   ├── components/                    # Sidebar, Navbar, KpiCard, Layout
-│   │   └── pages/                         # Landing, Dashboard, Scanner, History, Settings
+│   │   ├── components/                    # DeskLamp, Navbar, Sidebar, KpiCard, Layout
+│   │   └── pages/                         # LoginPage, LandingPage, Dashboard, Scanner, History, Settings
 │   └── package.json
+│
+├── supabase/
+│   └── migrations/
+│       └── 002_privacyguard_schema.sql    # Clean SQL schema & drop script
 └── README.md
 ```
 
 ---
 
-## Quickstart Instructions
+## Local Development Instructions
 
 ### 1. Run the Backend API Server
 ```bash
-npm --prefix backend install
-npm --prefix backend start
+npm --prefix server install
+npm --prefix server start
 ```
-*Backend runs on `http://localhost:5000` (`POST /api/analyze`, `GET /api/health`).*
+*Backend runs on `http://localhost:5000` with endpoints `POST /api/analyze` and `GET /api/health`.*
 
 ### 2. Run the Frontend Client
 ```bash
@@ -57,12 +62,30 @@ npm --prefix client run dev
 
 ---
 
+## Production Deployment Mapping
+
+| Service | Host | Root Directory | Build Command | Start Command |
+| :--- | :--- | :--- | :--- | :--- |
+| **Backend** | **Render** | `server` | `npm install` | `npm start` |
+| **Frontend** | **Vercel** | `client` | `npm run build` | `dist` (default) |
+
+### Render Environment Variables (Web Service)
+- `PORT`: `5000`
+- `NODE_ENV`: `production`
+- `CLIENT_URL`: `*` (or your Vercel domain)
+- `AI_API_KEY`: *(leave blank until Phase 3)*
+
+### Vercel Environment Variables (Frontend)
+- `VITE_API_BASE_URL`: `https://<YOUR-RENDER-BACKEND-URL>/api`
+
+---
+
 ## API Reference
 
 ### `POST /api/analyze`
 Inspects an arbitrary text payload with zero persistence.
 
-**Request Body:**
+**Request:**
 ```json
 {
   "text": "Hello support, my Aadhaar is 4829 1930 4812 and my PAN is ABCDE1234F. Please transfer funds urgently."
@@ -99,8 +122,3 @@ Inspects an arbitrary text payload with zero persistence.
   "disclaimer": "PRIVACYGUARD AI analysis is advisory and provided for defensive risk mitigation. It does not constitute legal counsel or definitive forensic proof of fraud."
 }
 ```
-
----
-
-## Phase 3 AI Readiness
-For Phase 3, inject `AI_API_KEY=` into `backend/.env`. All AI calls are processed server-side only; keys are never exposed to the client.
