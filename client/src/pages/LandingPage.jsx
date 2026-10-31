@@ -47,6 +47,13 @@ export default function LandingPage() {
 
         <div className="flex items-center space-x-3">
           <Link
+            to="/matrix"
+            className="text-xs font-mono font-medium text-emerald-400 hover:text-emerald-300 transition-colors px-2.5 py-1 rounded bg-emerald-950/40 border border-emerald-800/60 flex items-center space-x-1"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Matrix Mode</span>
+          </Link>
+          <Link
             to="/blueprint"
             className="text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors px-3 py-1.5"
           >

@@ -13,6 +13,7 @@ import NewMissionPage from './pages/NewMissionPage';
 import MissionDetailPage from './pages/MissionDetailPage';
 import MissionHistoryPage from './pages/MissionHistoryPage';
 import SystemBlueprintPage from './pages/SystemBlueprintPage';
+import RainTextDemo from './components/ui/demo';
 
 export default function App() {
   return (
@@ -23,6 +24,8 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/demo" element={<RainTextDemo />} />
+          <Route path="/matrix" element={<RainTextDemo />} />
 
           {/* Protected routes wrapped inside main Layout shell */}
           <Route

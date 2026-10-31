@@ -84,6 +84,16 @@ export default function Navbar() {
           </span>
         </div>
 
+        {/* Matrix Rain Mode Link */}
+        <Link
+          to="/matrix"
+          className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded text-xs font-mono font-medium text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-800/60 transition-all hover:shadow-md hover:shadow-emerald-950/50"
+          title="Interactive Matrix Rain Mode"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Matrix Stream</span>
+        </Link>
+
         {/* System Blueprint Link */}
         <Link
           to="/blueprint"
