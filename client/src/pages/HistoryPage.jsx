@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   FileText,
   AlertTriangle,
-  Download,
 } from 'lucide-react';
 
 const INITIAL_HISTORY = [
@@ -78,9 +77,9 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/10 font-mono">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.06] font-mono">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center space-x-2">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center space-x-2">
             <span>Spatial Inspection Ledger</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
@@ -89,7 +88,7 @@ export default function HistoryPage() {
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="text-xs font-mono text-sky-400">{filtered.length} records</span>
+          <span className="text-xs font-mono text-cyan-400">{filtered.length} records</span>
         </div>
       </div>
 
@@ -102,7 +101,7 @@ export default function HistoryPage() {
             placeholder="Search scans by identifier or document name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full glass-panel rounded-lg pl-9 pr-4 py-2 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-400/80"
+            className="w-full matte-glass rounded-xl pl-9 pr-4 py-2 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/80"
           />
         </div>
 
@@ -111,10 +110,10 @@ export default function HistoryPage() {
             <button
               key={risk}
               onClick={() => setFilterRisk(risk)}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                 filterRisk === risk
-                  ? 'bg-sky-400 text-black font-bold shadow-[0_0_15px_rgba(56,189,248,0.3)]'
-                  : 'glass-panel-subtle text-slate-400 hover:text-white'
+                  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold shadow-[0_0_15px_rgba(139,92,246,0.35)]'
+                  : 'matte-glass-subtle text-slate-400 hover:text-white'
               }`}
             >
               {risk}
@@ -123,12 +122,12 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      {/* Table in Spatial Glass Panel */}
-      <div className="glass-panel rounded-xl overflow-hidden shadow-2xl">
+      {/* Table in Spatial Matte Glass Panel */}
+      <div className="matte-glass rounded-xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs font-mono">
             <thead>
-              <tr className="border-b border-white/10 bg-black/40 text-[11px] font-semibold uppercase text-slate-400 tracking-wider">
+              <tr className="border-b border-white/[0.06] bg-black/40 text-[10px] font-semibold uppercase text-slate-400 tracking-wider">
                 <th className="py-3 px-4">Scan ID & Payload</th>
                 <th className="py-3 px-4">Timestamp</th>
                 <th className="py-3 px-4">Risk Level</th>
@@ -137,12 +136,12 @@ export default function HistoryPage() {
                 <th className="py-3 px-4">Enforcement</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-slate-300">
+            <tbody className="divide-y divide-white/[0.04] text-slate-300">
               {filtered.map((row) => (
-                <tr key={row.id} className="hover:bg-white/5 transition-colors">
+                <tr key={row.id} className="hover:bg-white/[0.03] transition-colors">
                   <td className="py-3.5 px-4">
                     <div className="font-semibold text-white">{row.name}</div>
-                    <div className="font-mono text-[10px] text-sky-400">{row.id}</div>
+                    <div className="font-mono text-[10px] text-cyan-400">{row.id}</div>
                   </td>
                   <td className="py-3.5 px-4 text-slate-400 text-[11px] whitespace-nowrap">
                     {row.date}
@@ -151,12 +150,12 @@ export default function HistoryPage() {
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                         row.risk === 'Critical'
-                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                          ? 'bg-rose-500/15 text-rose-300 border border-rose-500/25'
                           : row.risk === 'High'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          ? 'bg-amber-500/15 text-amber-300 border border-amber-500/25'
                           : row.risk === 'Moderate'
-                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          ? 'bg-violet-500/15 text-violet-300 border border-violet-500/25'
+                          : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/25'
                       }`}
                     >
                       {row.risk}
@@ -168,14 +167,14 @@ export default function HistoryPage() {
                   <td className="py-3.5 px-4">
                     <div className="flex flex-wrap gap-1 max-w-xs">
                       {row.categories.map((c, i) => (
-                        <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-black/60 text-slate-300 border border-white/5">
+                        <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-black/60 text-slate-300 border border-white/[0.06]">
                           {c}
                         </span>
                       ))}
                     </div>
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
-                    <span className="text-[11px] font-medium text-slate-300 px-2 py-1 rounded glass-panel-subtle">
+                    <span className="text-[11px] font-medium text-slate-300 px-2 py-0.5 rounded matte-glass-subtle">
                       {row.status}
                     </span>
                   </td>

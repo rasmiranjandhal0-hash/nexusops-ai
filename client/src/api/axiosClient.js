@@ -1,33 +1,22 @@
 import axios from 'axios';
 
+// Resolve API Base URL from environment variable with local fallback
 let rawBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
 
-// In local development, if VITE_API_BASE_URL points to a cloud domain that may be offline, use local '/api' proxy
-if (
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-) {
-  if (!rawBaseUrl.includes('localhost:5000') && !rawBaseUrl.includes('127.0.0.1:5000')) {
-    rawBaseUrl = '/api';
-  }
-}
-
-// Automatically append '/api' if an external backend origin is passed without it
-if (rawBaseUrl.startsWith('http')) {
+// Normalize: If an origin is passed without the /api suffix, automatically append it
+if (rawBaseUrl && rawBaseUrl.startsWith('http')) {
   const cleanUrl = rawBaseUrl.replace(/\/+$/, '');
   if (!cleanUrl.endsWith('/api')) {
     rawBaseUrl = cleanUrl + '/api';
   }
 }
 
-const API_BASE_URL = rawBaseUrl;
-
 const axiosClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: rawBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 45000, // Generous timeout for multi-agent reasoning calls
+  timeout: 30000,
 });
 
 // Automatically inject Bearer token into outgoing requests

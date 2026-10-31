@@ -8,14 +8,23 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen bg-black text-slate-100 flex overflow-x-hidden selection:bg-sky-500 selection:text-black">
-      {/* Persistent Spatial 3D Generative Anomaly in Background */}
-      <div className="fixed inset-0 pointer-events-none z-0 opacity-35 overflow-hidden">
-        <Suspense fallback={null}>
-          <GenerativeArtScene />
-        </Suspense>
-        {/* Spatial Depth Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/75 to-black pointer-events-none" />
+    <div className="relative min-h-screen bg-[#030306] text-slate-100 flex overflow-x-hidden selection:bg-cyan-500 selection:text-black font-sans">
+      {/* Jet Black + Royal Amethyst + Electric Cyan Ambient Background Layer */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Royal Amethyst upper ambient glow */}
+        <div className="absolute -top-32 left-1/4 w-[650px] h-[650px] rounded-full bg-violet-600/10 blur-[150px] pointer-events-none" />
+        {/* Electric Cyan touch glow */}
+        <div className="absolute top-1/2 -right-20 w-[450px] h-[450px] rounded-full bg-cyan-500/8 blur-[140px] pointer-events-none" />
+        
+        {/* 3D Wireframe Scene */}
+        <div className="absolute inset-0 opacity-25">
+          <Suspense fallback={null}>
+            <GenerativeArtScene />
+          </Suspense>
+        </div>
+        
+        {/* Smooth Vignette */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#030306]/40 via-[#030306]/75 to-[#030306] pointer-events-none" />
       </div>
 
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />

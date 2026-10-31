@@ -5,41 +5,46 @@ import {
   ScanEye,
   Lock,
   ArrowRight,
-  EyeOff,
   CheckCircle2,
-  Cpu,
   Sparkles,
-  Terminal,
 } from 'lucide-react';
 import { GenerativeArtScene } from '../components/ui/anomalous-matter-hero';
 
 export default function LandingPage() {
   const securityVectors = [
-    { title: 'PII & National ID Leaks', desc: 'Aadhaar 12-digit strings, PAN identifiers, passport credentials, phone numbers', risk: 'Critical' },
-    { title: 'Cloud Secrets & API Tokens', desc: 'Unprotected AWS secret keys, database URIs, OpenAI tokens exposed in prompts', risk: 'Critical' },
+    { title: 'National IDs & Sensitive PII', desc: 'Aadhaar 12-digit strings, PAN tax IDs, passport credentials, phone numbers', risk: 'Critical' },
+    { title: 'Cloud Secrets & API Tokens', desc: 'Unprotected AWS keys, database URIs, OpenAI tokens exposed in prompts', risk: 'Critical' },
     { title: 'Social Engineering & Coercion', desc: 'Urgent wire transfers, spoofed bank verification, coercion triggers', risk: 'High' },
     { title: 'PCI-DSS Payment Records', desc: '16-digit debit/credit card sequences with plaintext CVVs and expiry dates', risk: 'Critical' },
   ];
 
   return (
-    <div className="relative min-h-screen bg-black text-slate-100 flex flex-col selection:bg-sky-500 selection:text-black overflow-x-hidden">
-      {/* 3D Generative Art Scene Background */}
-      <div className="fixed inset-0 pointer-events-auto z-0 opacity-60">
-        <Suspense fallback={<div className="w-full h-full bg-black" />}>
-          <GenerativeArtScene />
-        </Suspense>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/60 to-black pointer-events-none" />
+    <div className="relative min-h-screen bg-[#030306] text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-black overflow-x-hidden font-sans">
+      {/* Jet Black + Royal Amethyst + Electric Cyan Atmosphere */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Royal Amethyst upper orb */}
+        <div className="absolute -top-32 left-1/4 w-[600px] h-[600px] rounded-full bg-violet-600/15 blur-[140px]" />
+        {/* Electric Cyan touch orb */}
+        <div className="absolute top-1/2 -right-24 w-[450px] h-[450px] rounded-full bg-cyan-500/10 blur-[130px]" />
+        {/* 3D Wireframe Scene */}
+        <div className="absolute inset-0 opacity-25">
+          <Suspense fallback={null}>
+            <GenerativeArtScene />
+          </Suspense>
+        </div>
+        {/* Dark Vignette */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#030306]/30 via-[#030306]/70 to-[#030306]" />
       </div>
 
-      {/* Spatial Glass Header */}
-      <header className="relative z-40 h-16 border-b border-white/10 bg-black/40 backdrop-blur-xl px-4 sm:px-8 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-400/30 flex items-center justify-center text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.3)]">
-            <ShieldCheck className="w-4 h-4" />
+      {/* Spatial Matte Glass Header */}
+      <header className="relative z-40 h-16 border-b border-white/[0.06] bg-[#030306]/40 backdrop-blur-xl px-4 sm:px-8 flex items-center justify-between">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/25 flex items-center justify-center text-violet-400 shadow-[0_0_15px_rgba(139,92,246,0.25)]">
+            <ShieldCheck className="w-4 h-4 text-violet-400" />
           </div>
           <div>
             <span className="font-bold text-sm tracking-tight text-white font-mono">
-              PRIVACYGUARD <span className="text-sky-400">AI</span>
+              PRIVACYGUARD <span className="text-cyan-400">AI</span>
             </span>
           </div>
         </div>
@@ -47,133 +52,133 @@ export default function LandingPage() {
         <div className="flex items-center space-x-3">
           <Link
             to="/login"
-            className="text-xs font-mono text-amber-300 hover:text-amber-200 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-400/30 transition-colors flex items-center space-x-1"
+            className="text-xs font-mono text-violet-300 hover:text-white px-3 py-1.5 rounded-lg border border-violet-500/20 hover:border-violet-500/40 bg-violet-950/20 transition-colors"
           >
-            <span>Sign In</span>
+            Sign In
           </Link>
           <Link
             to="/dashboard"
-            className="text-xs font-mono text-slate-300 hover:text-white px-3 py-1.5 transition-colors"
+            className="text-xs font-mono text-slate-300 hover:text-white px-3 py-1.5 transition-colors hidden sm:inline"
           >
             Dashboard
           </Link>
           <Link
             to="/scanner"
-            className="px-4 py-2 rounded-lg text-xs font-semibold text-black bg-sky-400 hover:bg-sky-300 transition-all shadow-lg shadow-sky-400/20 flex items-center space-x-1.5"
+            className="px-4 py-2 rounded-lg text-xs font-mono font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-cyan-500 transition-all shadow-[0_0_20px_-3px_rgba(124,58,237,0.4)] flex items-center space-x-1.5 hover:scale-105"
           >
             <span>Launch Scanner</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5 text-cyan-300" />
           </Link>
         </div>
       </header>
 
       {/* Hero Section */}
       <main className="relative z-20 flex-1">
-        <section className="pt-24 pb-20 px-4 sm:px-8 max-w-5xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full glass-panel-subtle text-xs font-mono text-sky-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
-            <span>OBSERVATION LOG: ANOMALOUS THREAT MATRIX</span>
+        <section className="pt-20 sm:pt-28 pb-16 px-4 sm:px-8 max-w-4xl mx-auto text-center space-y-6">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full matte-glass-subtle text-xs font-mono text-violet-300 border border-violet-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span>AMETHYST SPATIAL SECURITY MATRIX</span>
             <span className="text-white/20">|</span>
-            <span className="text-slate-400 text-[11px]">ZERO-PERSISTENCE DEFENSE</span>
+            <span className="text-slate-400 text-[10px]">ZERO PERSISTENCE</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-tight">
-            Spatial Privacy & <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-400">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
+            Next-Gen Privacy & <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-300 to-cyan-400">
               Data Leak Defense
             </span>
           </h1>
 
           <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Matter in constant, beautiful flux. PRIVACYGUARD AI inspects confidential communications, customer support logs, and developer prompts to quarantine sensitive leaks before exposure.
+            Stop confidential data exposure before it reaches customer logs, public tickets, or AI prompts. Real-time zero-persistence heuristic inspection.
           </p>
 
-          <div className="pt-6 flex flex-wrap items-center justify-center gap-4">
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-3.5">
             <Link
               to="/scanner"
-              className="px-6 py-3 rounded-lg text-xs sm:text-sm font-semibold text-black bg-sky-400 hover:bg-sky-300 transition-all shadow-[0_0_30px_rgba(56,189,248,0.35)] flex items-center space-x-2 hover:scale-105"
+              className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-cyan-500 transition-all shadow-[0_0_25px_-5px_rgba(124,58,237,0.5)] flex items-center space-x-2 hover:scale-105"
             >
-              <ScanEye className="w-4 h-4" />
+              <ScanEye className="w-4 h-4 text-cyan-300" />
               <span>Analyze Text Payload</span>
             </Link>
 
             <Link
-              to="/dashboard"
-              className="px-6 py-3 rounded-lg text-xs sm:text-sm font-medium text-slate-200 glass-panel hover:border-sky-400/50 transition-all flex items-center space-x-2"
+              to="/login"
+              className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-medium text-slate-200 matte-glass hover:border-violet-500/40 transition-all flex items-center space-x-2 hover:scale-105"
             >
-              <span>Security Dashboard</span>
-              <ArrowRight className="w-4 h-4 text-sky-400" />
+              <span>Operator Portal</span>
+              <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
             </Link>
           </div>
         </section>
 
-        {/* Spatial Glass Defense Vectors */}
-        <section className="py-16 px-4 sm:px-8 max-w-6xl mx-auto">
-          <div className="text-center mb-10">
-            <p className="text-xs font-mono uppercase tracking-widest text-sky-400">Continuous Flux Monitoring</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Multi-Vector Sensitive Inspection</h2>
+        {/* Spatial Matte Glass Vectors Grid */}
+        <section className="py-12 px-4 sm:px-8 max-w-5xl mx-auto">
+          <div className="text-center mb-8">
+            <p className="text-xs font-mono uppercase tracking-widest text-violet-400">Continuous Isolation</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-1">Multi-Vector Sensitive Inspection</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {securityVectors.map((item, idx) => (
               <div
                 key={idx}
-                className="glass-panel rounded-xl p-5 hover:border-sky-400/50 transition-all flex flex-col justify-between group"
+                className="matte-glass rounded-xl p-4 sm:p-5 hover:border-violet-500/40 transition-all flex flex-col justify-between group"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-white/[0.04] border border-white/[0.07] text-slate-300">
                       Vector 0{idx + 1}
                     </span>
                     <span
-                      className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
+                      className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
                         item.risk === 'Critical'
-                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                          : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                          ? 'bg-rose-500/15 text-rose-300 border border-rose-500/25'
+                          : 'bg-violet-500/15 text-violet-300 border border-violet-500/25'
                       }`}
                     >
                       {item.risk}
                     </span>
                   </div>
-                  <h3 className="text-sm font-semibold text-white mb-2 group-hover:text-sky-300 transition-colors">
+                  <h3 className="text-xs sm:text-sm font-semibold text-white mb-1.5 group-hover:text-violet-300 transition-colors">
                     {item.title}
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">{item.desc}</p>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-white/10 flex items-center text-xs text-sky-400 font-mono">
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                  <span>Defensive Shield Active</span>
+                <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center text-[11px] text-violet-400 font-mono">
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-cyan-400" />
+                  <span>Heuristic Active</span>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Zero-Persistence Spatial Card */}
-        <section className="py-12 px-4 sm:px-8 max-w-3xl mx-auto text-center">
-          <div className="glass-panel rounded-2xl p-8 relative overflow-hidden">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-400/30 flex items-center justify-center mx-auto mb-4 text-sky-400 shadow-[0_0_20px_rgba(56,189,248,0.25)]">
-              <Lock className="w-5 h-5" />
+        {/* Minimalist Sandbox Guarantee Card */}
+        <section className="py-10 px-4 sm:px-8 max-w-2xl mx-auto text-center">
+          <div className="matte-glass rounded-2xl p-6 sm:p-7 relative overflow-hidden">
+            <div className="w-9 h-9 rounded-xl bg-violet-600/15 border border-violet-500/25 flex items-center justify-center mx-auto mb-3 text-cyan-400 shadow-[0_0_15px_rgba(139,92,246,0.2)]">
+              <Lock className="w-4 h-4" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2 font-mono">Zero-Knowledge Client Sandbox</h3>
-            <p className="text-xs text-slate-300 max-w-lg mx-auto leading-relaxed mb-6">
-              Analyzed content is strictly inspected in transient memory. We never persist, record, or train models on your proprietary or sensitive data.
+            <h3 className="text-base font-bold text-white mb-1.5 font-mono">Zero-Persistence Memory Sandbox</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed mb-4">
+              Raw payloads are strictly evaluated in volatile server memory. We never persist or store user texts.
             </p>
             <Link
               to="/scanner"
-              className="inline-flex items-center space-x-2 text-xs font-mono font-semibold text-sky-400 hover:text-sky-300 transition-colors"
+              className="inline-flex items-center space-x-1.5 text-xs font-mono font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
             >
-              <span>Test Interactive Privacy Scanner</span>
+              <span>Test Interactive Scanner</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </section>
       </main>
 
-      {/* Minimal Footer */}
-      <footer className="relative z-20 border-t border-white/10 py-6 px-4 sm:px-8 text-center text-xs font-mono text-slate-500">
-        <p>PRIVACYGUARD AI © 2026 — Spatial Glass Generative Art & Privacy Engine.</p>
+      {/* Minimalist Footer */}
+      <footer className="relative z-20 border-t border-white/[0.06] py-5 px-4 sm:px-8 text-center text-xs font-mono text-slate-500">
+        <p>PRIVACYGUARD AI © 2026 — Jet Black, Royal Amethyst & Electric Cyan Spatial Security.</p>
       </footer>
     </div>
   );
