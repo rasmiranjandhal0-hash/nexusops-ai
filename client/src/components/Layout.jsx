@@ -16,15 +16,15 @@ export default function Layout() {
         {/* Electric Cyan touch glow */}
         <div className="absolute top-1/2 -right-20 w-[450px] h-[450px] rounded-full bg-cyan-500/8 blur-[140px] pointer-events-none" />
         
-        {/* 3D Wireframe Scene */}
-        <div className="absolute inset-0 opacity-30">
+        {/* 3D Wireframe Scene - High Radiance */}
+        <div className="absolute inset-0 opacity-65">
           <Suspense fallback={null}>
             <GenerativeArtScene />
           </Suspense>
         </div>
         
         {/* Smooth Vignette */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#030306]/40 via-[#030306]/75 to-[#030306] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#030306]/50 to-[#030306]/90 pointer-events-none" />
       </div>
 
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />

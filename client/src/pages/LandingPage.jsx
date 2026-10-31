@@ -26,14 +26,14 @@ export default function LandingPage() {
         <div className="absolute -top-32 left-1/4 w-[600px] h-[600px] rounded-full bg-violet-600/15 blur-[140px]" />
         {/* Electric Cyan touch orb */}
         <div className="absolute top-1/2 -right-24 w-[450px] h-[450px] rounded-full bg-cyan-500/10 blur-[130px]" />
-        {/* 3D Wireframe Scene */}
-        <div className="absolute inset-0 opacity-40">
+        {/* 3D Wireframe Scene - High Radiance */}
+        <div className="absolute inset-0 opacity-85 sm:opacity-95">
           <Suspense fallback={null}>
             <GenerativeArtScene />
           </Suspense>
         </div>
-        {/* Dark Vignette */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#030306]/30 via-[#030306]/70 to-[#030306]" />
+        {/* Soft Depth Vignette */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#030306]/40 to-[#030306]/90" />
       </div>
 
       {/* Spatial Matte Glass Header */}

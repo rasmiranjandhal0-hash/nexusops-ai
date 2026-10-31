@@ -30,14 +30,14 @@ export function GenerativeArtScene() {
     const assemblyGroup = new THREE.Group();
     scene.add(assemblyGroup);
 
-    // 1. Primary Morphing 3D Sphere (White <-> Grey <-> White transition)
+    // 1. Primary Morphing 3D Sphere (Radiant & Bright White <-> Grey <-> White transition)
     const geometry = new THREE.IcosahedronGeometry(1.25, 64);
     const material = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
         pointLightPosition: { value: new THREE.Vector3(0, 0, 5) },
         color: { value: new THREE.Color(0xffffff) },
-        colorCycle: { value: 1.0 }, // 1.0 = white, 0.0 = grey
+        colorCycle: { value: 1.0 }, // 1.0 = radiant white, 0.0 = metallic silver grey
       },
       vertexShader: `
         uniform float time;
@@ -116,23 +116,25 @@ export function GenerativeArtScene() {
         void main() {
             vec3 normal = normalize(vNormal);
             vec3 lightDir = normalize(pointLightPosition - vPosition);
-            float diffuse = max(dot(normal, lightDir), 0.15);
+            float diffuse = max(dot(normal, lightDir), 0.25);
             
             // Optical Fresnel effect for glowing perimeter
             float fresnel = 1.0 - abs(dot(normal, vec3(0.0, 0.0, 1.0)));
-            fresnel = pow(fresnel, 2.2);
+            float outerGlow = pow(fresnel, 1.7);
             
             // Specular metallic sheen
             vec3 viewDir = normalize(-vPosition);
             vec3 halfVector = normalize(lightDir + viewDir);
-            float spec = pow(max(dot(normal, halfVector), 0.0), 28.0);
+            float spec = pow(max(dot(normal, halfVector), 0.0), 22.0);
             
-            // Interpolate highlights between sleek metallic chrome and pure radiant white
-            vec3 highlight = mix(vec3(0.72, 0.74, 0.78), vec3(1.0, 1.0, 1.0), colorCycle);
-            vec3 finalColor = color * (diffuse * 0.65 + 0.35) + highlight * (fresnel * 0.75 + spec * 0.45);
+            // Super radiant brightness boost
+            vec3 highlight = mix(vec3(0.9, 0.92, 0.96), vec3(1.6, 1.6, 1.6), colorCycle);
+            vec3 radianceGlow = vec3(1.0) * pow(fresnel, 2.2) * 1.1;
             
-            // Dynamic alpha modulation
-            float alpha = clamp(0.35 + fresnel * 0.55 + diffuse * 0.2, 0.0, 0.95);
+            vec3 finalColor = color * (diffuse * 0.85 + 0.45) + highlight * (outerGlow * 1.3 + spec * 0.75) + radianceGlow;
+            
+            // Radiant alpha modulation
+            float alpha = clamp(0.5 + outerGlow * 0.5 + diffuse * 0.25, 0.0, 1.0);
             gl_FragColor = vec4(finalColor, alpha);
         }
       `,
@@ -143,47 +145,81 @@ export function GenerativeArtScene() {
     const mesh = new THREE.Mesh(geometry, material);
     assemblyGroup.add(mesh);
 
-    // 2. Counter-Rotating Inner 3D Lattice Core (Adds Multi-Layer Parallax Depth)
-    const innerGeometry = new THREE.IcosahedronGeometry(0.72, 16);
+    // 2. Radiant Atmospheric Aura Halo (Emissive Outer Shell)
+    const auraGeometry = new THREE.IcosahedronGeometry(1.38, 32);
+    const auraMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        auraColor: { value: new THREE.Color(0xffffff) },
+        auraPower: { value: 0.75 },
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 auraColor;
+        uniform float auraPower;
+        varying vec3 vNormal;
+        void main() {
+          float rim = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+          gl_FragColor = vec4(auraColor, rim * auraPower);
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false,
+    });
+    const auraMesh = new THREE.Mesh(auraGeometry, auraMaterial);
+    assemblyGroup.add(auraMesh);
+
+    // 3. Counter-Rotating Inner 3D Lattice Core (Adds Multi-Layer Parallax Depth)
+    const innerGeometry = new THREE.IcosahedronGeometry(0.74, 16);
     const innerMaterial = new THREE.MeshStandardMaterial({
-      color: 0xcccccc,
-      metalness: 0.85,
-      roughness: 0.25,
+      color: 0xdddddd,
+      metalness: 0.9,
+      roughness: 0.15,
       wireframe: true,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.65,
+      emissive: new THREE.Color(0x333333),
     });
     const innerMesh = new THREE.Mesh(innerGeometry, innerMaterial);
     assemblyGroup.add(innerMesh);
 
-    // 3. Tilted 3D Celestial Gyroscope Rings
-    const ring1Geometry = new THREE.TorusGeometry(1.68, 0.006, 16, 120);
+    // 4. Tilted Radiant 3D Gyroscope Rings (Additive Blending for Luminescence)
+    const ring1Geometry = new THREE.TorusGeometry(1.68, 0.007, 16, 120);
     const ring1Material = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.4,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
     });
     const ring1 = new THREE.Mesh(ring1Geometry, ring1Material);
     ring1.rotation.x = Math.PI * 0.32;
     ring1.rotation.y = Math.PI * 0.18;
     assemblyGroup.add(ring1);
 
-    const ring2Geometry = new THREE.TorusGeometry(1.92, 0.005, 16, 120);
+    const ring2Geometry = new THREE.TorusGeometry(1.92, 0.006, 16, 120);
     const ring2Material = new THREE.MeshBasicMaterial({
-      color: 0x888888,
+      color: 0xcccccc,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.55,
+      blending: THREE.AdditiveBlending,
     });
     const ring2 = new THREE.Mesh(ring2Geometry, ring2Material);
     ring2.rotation.x = -Math.PI * 0.38;
     ring2.rotation.z = Math.PI * 0.22;
     assemblyGroup.add(ring2);
 
-    // 4. Floating 3D Starfield / Quantum Dust Particles
-    const particleCount = 140;
+    // 5. Floating Radiant 3D Starfield / Quantum Dust Particles
+    const particleCount = 150;
     const particlePositions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
-      const radius = 1.45 + Math.random() * 1.25;
+      const radius = 1.45 + Math.random() * 1.35;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(Math.random() * 2 - 1);
       particlePositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
@@ -194,40 +230,45 @@ export function GenerativeArtScene() {
     particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
     const particleMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
-      size: 0.022,
+      size: 0.03,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.85,
       blending: THREE.AdditiveBlending,
     });
     const particles = new THREE.Points(particleGeometry, particleMaterial);
     assemblyGroup.add(particles);
 
-    // Dynamic 3D Point Light
-    const pointLight = new THREE.PointLight(0xffffff, 1.2, 100);
+    // Dynamic 3D High-Intensity Lighting
+    const pointLight = new THREE.PointLight(0xffffff, 2.5, 100);
     pointLight.position.set(0, 0, 5);
     lightRef.current = pointLight;
     scene.add(pointLight);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
 
     // Mouse Parallax coordinates (smoothed via damping)
     let targetRotationX = 0;
     let targetRotationY = 0;
 
     // Palette definition for cycling:
-    // Pure Bright White (0xffffff) <---> Sophisticated Metallic Slate Grey (0x64748b / 0x71717a)
+    // Pure Radiant White (0xffffff) <---> Sleek Metallic Silver Grey (0x71717a)
     const whiteColor = new THREE.Color(0xffffff);
-    const greyColor = new THREE.Color(0x6b7280); // refined silver-slate grey
+    const greyColor = new THREE.Color(0x71717a); // refined silver-slate grey
     const currentColor = new THREE.Color();
 
     let frameId: number;
     const animate = (t: number) => {
-      // 1. Continuous smooth color cycle: White -> Grey -> White again
-      // Frequency: smooth undulating cycle every ~6.2 seconds
+      // 1. Continuous smooth color cycle: Radiant White -> Grey -> White again
       const cycle = (Math.sin(t * 0.001) + 1.0) * 0.5; // Oscillates smoothly between 0.0 and 1.0
       currentColor.lerpColors(greyColor, whiteColor, cycle);
 
       material.uniforms.color.value.copy(currentColor);
       material.uniforms.colorCycle.value = cycle;
+      auraMaterial.uniforms.auraColor.value.copy(currentColor);
+      auraMaterial.uniforms.auraPower.value = 0.5 + cycle * 0.4;
       innerMaterial.color.copy(currentColor);
+      innerMaterial.emissive.copy(currentColor).multiplyScalar(0.25);
       ring1Material.color.copy(currentColor);
       ring2Material.color.copy(currentColor);
       particleMaterial.color.copy(currentColor);
@@ -262,6 +303,7 @@ export function GenerativeArtScene() {
 
       const breathingScale = 1.0 + Math.sin(t * 0.0014) * 0.055;
       mesh.scale.set(breathingScale, breathingScale, breathingScale);
+      auraMesh.scale.set(breathingScale, breathingScale, breathingScale);
 
       // 8. Smooth Interactive 3D Mouse Parallax
       assemblyGroup.rotation.y += (targetRotationY - assemblyGroup.rotation.y) * 0.04;
@@ -310,6 +352,8 @@ export function GenerativeArtScene() {
       }
       geometry.dispose();
       material.dispose();
+      auraGeometry.dispose();
+      auraMaterial.dispose();
       innerGeometry.dispose();
       innerMaterial.dispose();
       ring1Geometry.dispose();
