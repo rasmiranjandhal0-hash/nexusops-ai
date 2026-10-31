@@ -19,13 +19,27 @@ const axiosClient = axios.create({
   timeout: 30000,
 });
 
-// Automatically inject Bearer token into outgoing requests
+// Automatically inject Bearer token and Customer ID into outgoing requests
 axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('privacyguard_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    try {
+      const storedCustomer = localStorage.getItem('privacyguard_customer');
+      if (storedCustomer) {
+        const parsed = JSON.parse(storedCustomer);
+        if (parsed && (parsed.id || parsed.email)) {
+          config.headers['x-customer-id'] = (parsed.id || parsed.email).trim().toLowerCase();
+        }
+      }
+    } catch {
+      // Fallback
+      config.headers['x-customer-id'] = 'demo@privacyguard.ai';
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

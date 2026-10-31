@@ -1,10 +1,23 @@
 import express from 'express';
-import { analyzeTextController } from '../controllers/analysisController.js';
+import {
+  analyzeTextController,
+  getCustomerHistoryController,
+  getCustomerStatsController,
+  clearCustomerHistoryController,
+  deleteCustomerScanController,
+} from '../controllers/analysisController.js';
 
 const router = express.Router();
 
-// POST /api/analyze
+// Analysis
 router.post('/analyze', analyzeTextController);
 
-export default router;
+// Customer-wise history ledger
+router.get('/history', getCustomerHistoryController);
+router.delete('/history/:id', deleteCustomerScanController);
+router.post('/history/clear', clearCustomerHistoryController);
 
+// Customer-wise stats
+router.get('/stats', getCustomerStatsController);
+
+export default router;

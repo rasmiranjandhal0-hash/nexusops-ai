@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Scan,
   ShieldCheck,
@@ -10,8 +11,12 @@ import {
   Server,
   WifiOff,
   CheckCircle,
+  ExternalLink,
+  User,
+  History,
 } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
+import { getCurrentCustomer, subscribeToAuth } from '../utils/auth';
 
 const PRESETS = [
   {
@@ -44,29 +49,60 @@ Contact oncall engineer at devops-alert@company.org or +1 (555) 234-5678.`,
 ];
 
 export default function ScannerPage() {
+  const [customer, setCustomer] = useState(getCurrentCustomer());
   const [inputText, setInputText] = useState(PRESETS[0].text);
+  const [activePresetLabel, setActivePresetLabel] = useState(PRESETS[0].label);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [copied, setCopied] = useState(false);
   const [backendStatus, setBackendStatus] = useState(null);
+  const [ledgerNotice, setLedgerNotice] = useState(null);
+
+  useEffect(() => {
+    const unsub = subscribeToAuth((newCust) => {
+      setCustomer(newCust);
+    });
+    return unsub;
+  }, []);
 
   const handleAnalyze = async () => {
     if (!inputText.trim()) return;
     setIsScanning(true);
+    setLedgerNotice(null);
+
+    const targetCust = customer || getCurrentCustomer();
+    const payloadTitle = activePresetLabel || `Document Scan: ${inputText.slice(0, 32)}...`;
 
     try {
-      const response = await axiosClient.post('/analyze', { text: inputText });
+      const response = await axiosClient.post('/analyze', {
+        text: inputText,
+        title: payloadTitle,
+        customerId: targetCust.id,
+      });
+
       if (response.data && response.data.riskLevel) {
         setScanResult(response.data);
         setBackendStatus('online');
         setIsScanning(false);
+
+        // Synchronize customer history in local storage cache
+        if (response.data.scanRecord) {
+          const cacheKey = `privacyguard_history_${targetCust.id}`;
+          const currentList = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+          const updated = [
+            response.data.scanRecord,
+            ...currentList.filter((i) => i.id !== response.data.scanRecord.id),
+          ];
+          localStorage.setItem(cacheKey, JSON.stringify(updated));
+          setLedgerNotice(response.data.scanRecord);
+        }
         return;
       }
     } catch (err) {
       console.warn('Backend API offline or unreachable. Triggering client-side fallback engine:', err.message);
     }
 
-    // Client fallback
+    // Client fallback engine (zero-data-loss for hackathon demo)
     setTimeout(() => {
       const lower = inputText.toLowerCase();
       let riskScore = 10;
@@ -74,7 +110,13 @@ export default function ScannerPage() {
       const findings = [];
       const recommendedActions = [];
 
-      if (lower.includes('aadhaar') || lower.includes('pan') || lower.includes('4111') || lower.includes('cvv') || lower.includes('otp')) {
+      if (
+        lower.includes('aadhaar') ||
+        lower.includes('pan') ||
+        lower.includes('4111') ||
+        lower.includes('cvv') ||
+        lower.includes('otp')
+      ) {
         riskScore = 95;
         riskLevel = 'CRITICAL';
         findings.push({
@@ -97,7 +139,12 @@ export default function ScannerPage() {
         });
         recommendedActions.push('Never transmit full Aadhaar, PAN, or card details in unencrypted text.');
         recommendedActions.push('Tokenize or redact cardholder data before logging or storing.');
-      } else if (lower.includes('urgent') || lower.includes('suspended') || lower.includes('kyc') || lower.includes('.xyz')) {
+      } else if (
+        lower.includes('urgent') ||
+        lower.includes('suspended') ||
+        lower.includes('kyc') ||
+        lower.includes('.xyz')
+      ) {
         riskScore = 88;
         riskLevel = 'HIGH';
         findings.push({
@@ -126,14 +173,59 @@ export default function ScannerPage() {
         recommendedActions.push('No immediate remediation required.');
       }
 
+      const scanId = `SCN-${Math.floor(1000 + Math.random() * 9000)}`;
+      const now = new Date();
+      const fallbackRecord = {
+        id: scanId,
+        customerId: targetCust.id,
+        title: payloadTitle,
+        dateFormatted: new Intl.DateTimeFormat('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true,
+        }).format(now),
+        timestamp: now.toISOString(),
+        risk:
+          riskLevel === 'CRITICAL'
+            ? 'Critical'
+            : riskLevel === 'HIGH'
+            ? 'High'
+            : riskLevel === 'MEDIUM'
+            ? 'Moderate'
+            : 'Low',
+        score: riskScore,
+        detectedCount: findings.length,
+        categories: findings.map((f) => f.category),
+        status:
+          riskLevel === 'CRITICAL'
+            ? 'Quarantined'
+            : riskLevel === 'HIGH'
+            ? 'Flagged'
+            : 'Clean',
+        explanation: 'Simulated heuristic analysis evaluated in client sandbox memory.',
+        recommendedActions,
+        findings,
+      };
+
+      const cacheKey = `privacyguard_history_${targetCust.id}`;
+      const currentList = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+      const updated = [fallbackRecord, ...currentList.filter((i) => i.id !== scanId)];
+      localStorage.setItem(cacheKey, JSON.stringify(updated));
+
       setScanResult({
         riskLevel,
         riskScore,
         findings,
         explanation: 'Simulated heuristic analysis evaluated in client sandbox memory.',
         recommendedActions,
-        disclaimer: 'PRIVACYGUARD AI analysis is advisory and provided for defensive risk mitigation. It does not constitute legal counsel or definitive forensic proof of fraud.',
+        disclaimer:
+          'PRIVACYGUARD AI analysis is advisory and provided for defensive risk mitigation. It does not constitute legal counsel or definitive forensic proof of fraud.',
+        scanRecord: fallbackRecord,
       });
+      setLedgerNotice(fallbackRecord);
       setBackendStatus('fallback');
       setIsScanning(false);
     }, 400);
@@ -155,39 +247,71 @@ export default function ScannerPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
+      {/* Header & Active Customer Badge */}
       <div className="pb-2 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center space-x-2 font-mono">
             <span>Spatial Privacy Scanner</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5 font-mono">
-            Zero-persistence heuristic inspection: Aadhaar, PAN, Cards, Credentials, and Scam Coercion.
-          </p>
+          <div className="flex items-center space-x-2 mt-1 text-xs text-slate-400 font-mono">
+            <User className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Auditing Profile:</span>
+            <span className="text-white font-semibold">{customer.name}</span>
+            <span className="text-slate-500">({customer.email})</span>
+          </div>
         </div>
 
-        {backendStatus && (
-          <div
-            className={`px-3 py-1 rounded-xl border text-xs font-mono flex items-center space-x-2 self-start sm:self-auto ${
-              backendStatus === 'online'
-                ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
-                : 'bg-amber-950/40 border-amber-500/30 text-amber-300'
-            }`}
+        <div className="flex items-center space-x-2.5">
+          {backendStatus && (
+            <div
+              className={`px-3 py-1 rounded-xl border text-xs font-mono flex items-center space-x-2 ${
+                backendStatus === 'online'
+                  ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
+                  : 'bg-amber-950/40 border-amber-500/30 text-amber-300'
+              }`}
+            >
+              {backendStatus === 'online' ? (
+                <>
+                  <Server className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Backend Synced</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Local Memory Mode</span>
+                </>
+              )}
+            </div>
+          )}
+
+          <Link
+            to="/history"
+            className="flex items-center space-x-1.5 px-3 py-1 rounded-xl text-xs font-mono matte-glass-subtle hover:text-white text-slate-300 border border-white/[0.08] transition-all"
           >
-            {backendStatus === 'online' ? (
-              <>
-                <Server className="w-3.5 h-3.5 text-emerald-400" />
-                <span>API Online (POST /api/analyze)</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="w-3.5 h-3.5 text-amber-400" />
-                <span>Backend Offline (Client Fallback)</span>
-              </>
-            )}
-          </div>
-        )}
+            <History className="w-3.5 h-3.5 text-violet-400" />
+            <span>View Ledger</span>
+          </Link>
+        </div>
       </div>
+
+      {/* Synchronized Ledger Notification Banner */}
+      {ledgerNotice && (
+        <div className="p-3 rounded-xl bg-violet-950/50 border border-violet-500/30 text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-fade-in-long">
+          <div className="flex items-center space-x-2 text-violet-200">
+            <CheckCircle className="w-4 h-4 text-cyan-400 shrink-0" />
+            <span>
+              Recorded in <strong className="text-white">{customer.email}</strong> personal history ledger ({ledgerNotice.id}).
+            </span>
+          </div>
+          <Link
+            to="/history"
+            className="inline-flex items-center space-x-1 text-cyan-300 hover:text-cyan-200 underline font-semibold shrink-0"
+          >
+            <span>Open in Ledger</span>
+            <ExternalLink className="w-3 h-3" />
+          </Link>
+        </div>
+      )}
 
       {/* Preset Selector */}
       <div className="matte-glass rounded-xl p-3.5 space-y-2">
@@ -201,10 +325,16 @@ export default function ScannerPage() {
               key={idx}
               onClick={() => {
                 setInputText(p.text);
+                setActivePresetLabel(p.label);
                 setScanResult(null);
                 setBackendStatus(null);
+                setLedgerNotice(null);
               }}
-              className="text-xs font-mono px-3 py-1.5 rounded-lg matte-glass-subtle hover:border-violet-500/40 text-slate-200 transition-all hover:scale-105"
+              className={`text-xs font-mono px-3 py-1.5 rounded-lg transition-all ${
+                activePresetLabel === p.label && inputText === p.text
+                  ? 'bg-violet-600/40 text-white border border-violet-500/50 shadow-sm'
+                  : 'matte-glass-subtle hover:border-violet-500/40 text-slate-200'
+              }`}
             >
               {p.label}
             </button>
@@ -228,7 +358,10 @@ export default function ScannerPage() {
             <textarea
               rows={12}
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={(e) => {
+                setInputText(e.target.value);
+                setActivePresetLabel('');
+              }}
               placeholder="Paste suspicious text or communication here..."
               className="w-full bg-[#080612]/70 border border-violet-500/20 rounded-xl p-3.5 text-xs sm:text-sm font-mono text-white placeholder-slate-600 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/40 leading-relaxed transition-all resize-y"
             />
@@ -236,7 +369,7 @@ export default function ScannerPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
               <div className="flex items-center space-x-1.5 text-[10px] text-slate-400 font-mono">
                 <Lock className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Zero Persistence Guarantee</span>
+                <span>Zero Persistence Guarantee: Raw text is never stored</span>
               </div>
 
               <div className="flex items-center space-x-2 font-mono">
@@ -246,6 +379,7 @@ export default function ScannerPage() {
                     setInputText('');
                     setScanResult(null);
                     setBackendStatus(null);
+                    setLedgerNotice(null);
                   }}
                   className="px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors"
                 >
@@ -255,17 +389,17 @@ export default function ScannerPage() {
                   type="button"
                   onClick={handleAnalyze}
                   disabled={isScanning || !inputText.trim()}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-cyan-500 disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_20px_-3px_rgba(124,58,237,0.4)] transition-all flex items-center space-x-2 hover:scale-105"
+                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-cyan-500 shadow-[0_0_20px_-3px_rgba(124,58,237,0.5)] transition-all disabled:opacity-50 hover:scale-105"
                 >
                   {isScanning ? (
                     <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-300" />
-                      <span>Scanning Anomaly Flux...</span>
+                      <RefreshCw className="w-4 h-4 animate-spin text-cyan-300" />
+                      <span>Scanning Heuristics...</span>
                     </>
                   ) : (
                     <>
-                      <ShieldCheck className="w-3.5 h-3.5 text-cyan-300" />
-                      <span>Analyze Privacy Risk</span>
+                      <Scan className="w-4 h-4 text-cyan-300" />
+                      <span>Execute Privacy Scan</span>
                     </>
                   )}
                 </button>
@@ -274,137 +408,125 @@ export default function ScannerPage() {
           </div>
         </div>
 
-        {/* Right: Results Panel */}
+        {/* Right: Heuristic Analysis Results Card */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="matte-glass rounded-xl p-4 sm:p-5 min-h-[440px] flex flex-col justify-between">
-            {scanResult ? (
-              <div className="space-y-3.5">
-                {/* Result Header */}
-                <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.06] font-mono">
-                  <div className="flex items-center space-x-2">
+          {scanResult ? (
+            <div className="matte-glass rounded-xl p-5 space-y-4 animate-fade-in-long">
+              {/* Header Risk Pill */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] font-mono">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 block">
+                    Assessment Result
+                  </span>
+                  <div className="flex items-center space-x-2 mt-0.5">
                     <span
-                      className={`text-xs font-bold px-2.5 py-1 rounded-md border ${
+                      className={`text-sm font-bold px-2.5 py-0.5 rounded-md ${
                         scanResult.riskLevel === 'CRITICAL'
-                          ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                           : scanResult.riskLevel === 'HIGH'
-                          ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                           : scanResult.riskLevel === 'MEDIUM'
-                          ? 'bg-violet-500/15 text-violet-300 border-violet-500/30'
-                          : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                          ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
+                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                       }`}
                     >
                       {scanResult.riskLevel} RISK
                     </span>
-                    <span className="text-[11px] font-mono text-slate-300 font-bold">
-                      Score: {scanResult.riskScore}/100
+                    <span className="text-xs text-slate-300 font-bold">
+                      Score: {scanResult.riskScore} / 100
                     </span>
                   </div>
-
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-violet-600/10 text-cyan-300 border border-violet-500/25 font-semibold">
-                    {backendStatus === 'online' ? 'Live API Validated' : 'Heuristic Engine'}
-                  </span>
                 </div>
 
-                {/* Detected Categories & Masked Examples */}
-                <div>
-                  <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                    Findings ({scanResult.findings.length})
-                  </p>
-                  <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
-                    {scanResult.findings.map((f, idx) => (
+                <button
+                  onClick={handleCopyRedacted}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-mono matte-glass-subtle hover:border-violet-500/40 text-slate-200 transition-all hover:scale-105"
+                >
+                  <Copy className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>{copied ? 'Copied!' : 'Copy Redacted'}</span>
+                </button>
+              </div>
+
+              {/* Advisory Explanation */}
+              <div className="space-y-1">
+                <h4 className="text-xs font-mono font-semibold text-slate-300">Analysis Summary:</h4>
+                <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                  {scanResult.explanation}
+                </p>
+              </div>
+
+              {/* Detected Categories List */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-mono font-semibold text-slate-300">
+                  Detected Sensitive Vectors ({scanResult.findings?.length || 0}):
+                </h4>
+                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                  {scanResult.findings && scanResult.findings.length > 0 ? (
+                    scanResult.findings.map((item, idx) => (
                       <div
                         key={idx}
-                        className="p-2 rounded-lg matte-glass-subtle text-xs space-y-1 font-mono"
+                        className="p-3 rounded-lg bg-black/40 border border-white/[0.06] text-xs font-mono space-y-1"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-white">{f.category}</span>
-                          <span
-                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                              f.severity === 'CRITICAL'
-                                ? 'text-rose-300 bg-rose-500/10'
-                                : f.severity === 'HIGH'
-                                ? 'text-amber-300 bg-amber-500/10'
-                                : 'text-cyan-300 bg-cyan-500/10'
-                            }`}
-                          >
-                            {f.severity}
+                          <span className="font-semibold text-white">{item.category}</span>
+                          <span className="text-[10px] text-rose-300 font-bold px-1.5 py-0.5 rounded bg-rose-500/10">
+                            {item.severity}
                           </span>
                         </div>
-                        {f.description && <p className="text-[10px] text-slate-400">{f.description}</p>}
-                        {f.examples && f.examples.length > 0 && (
-                          <div className="pt-0.5 flex flex-wrap gap-1">
-                            {f.examples.map((ex, i) => (
-                              <span
-                                key={i}
-                                className="text-[9px] px-1.5 py-0.5 rounded bg-black/60 border border-white/[0.06] text-cyan-300"
-                              >
-                                {ex}
-                              </span>
-                            ))}
+                        <p className="text-[11px] text-slate-400 font-sans">{item.description}</p>
+                        {item.examples && item.examples.length > 0 && (
+                          <div className="flex items-center space-x-2 pt-1">
+                            <span className="text-[10px] text-slate-500">Masked Sample:</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-white/[0.04] text-cyan-300 border border-white/[0.06]">
+                              {item.examples[0]}
+                            </span>
                           </div>
                         )}
                       </div>
+                    ))
+                  ) : (
+                    <div className="p-3 rounded-lg bg-emerald-950/20 border border-emerald-500/20 text-xs text-emerald-300 font-mono">
+                      ✓ No sensitive identifiers or coercion vectors detected.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Remediation Actions */}
+              {scanResult.recommendedActions && scanResult.recommendedActions.length > 0 && (
+                <div className="space-y-1.5 pt-2 border-t border-white/[0.06]">
+                  <h4 className="text-xs font-mono font-semibold text-cyan-300 flex items-center space-x-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Recommended Actions:</span>
+                  </h4>
+                  <ul className="space-y-1 text-xs text-slate-300 font-sans list-disc list-inside">
+                    {scanResult.recommendedActions.map((action, idx) => (
+                      <li key={idx} className="leading-relaxed">
+                        {action}
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
+              )}
 
-                {/* Explanation */}
-                {scanResult.explanation && (
-                  <div className="text-xs text-slate-300 matte-glass-subtle p-2.5 rounded-lg font-mono">
-                    <p className="text-[10px] uppercase text-violet-400 font-semibold mb-1">Assessment</p>
-                    <p className="leading-relaxed text-[10px] text-slate-300">{scanResult.explanation}</p>
-                  </div>
-                )}
-
-                {/* Recommended Actions */}
-                {scanResult.recommendedActions && scanResult.recommendedActions.length > 0 && (
-                  <div className="matte-glass-subtle rounded-lg p-2.5 text-xs space-y-1 font-mono">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-cyan-300 flex items-center space-x-1">
-                      <CheckCircle className="w-3 h-3 text-cyan-400" />
-                      <span>Recommended Safe Actions</span>
-                    </p>
-                    <ul className="space-y-0.5 text-slate-300 text-[10px]">
-                      {scanResult.recommendedActions.map((act, idx) => (
-                        <li key={idx} className="flex items-start space-x-1.5">
-                          <span className="text-violet-400 font-bold">•</span>
-                          <span>{act}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Redaction Button */}
-                <button
-                  type="button"
-                  onClick={handleCopyRedacted}
-                  className="w-full py-2 rounded-lg text-xs font-mono font-semibold text-slate-200 matte-glass-subtle hover:border-violet-500/40 transition-all flex items-center justify-center space-x-2"
-                >
-                  <Copy className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>{copied ? 'Copied Redacted Version!' : 'Copy Redacted Text to Clipboard'}</span>
-                </button>
+              {/* Disclaimer */}
+              <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04] text-[10px] font-mono text-slate-400 flex items-start space-x-2">
+                <Info className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                <span>{scanResult.disclaimer}</span>
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500 my-auto">
-                <div className="w-10 h-10 rounded-xl matte-glass-subtle flex items-center justify-center mb-2.5 text-violet-400 shadow-[0_0_15px_rgba(139,92,246,0.2)]">
-                  <ShieldCheck className="w-5 h-5 text-cyan-400" />
-                </div>
-                <h4 className="text-xs sm:text-sm font-semibold text-slate-200 font-mono">Awaiting Input Payload</h4>
-                <p className="text-[11px] text-slate-400 max-w-xs mt-1 leading-relaxed font-mono">
-                  Paste content or select a preset scenario above, then click "Analyze Privacy Risk".
-                </p>
-              </div>
-            )}
-
-            {/* Bottom Status Banner */}
-            <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex items-center justify-between text-[10px] text-slate-400 font-mono">
-              <span className="flex items-center space-x-1">
-                <Info className="w-3 h-3 text-cyan-400" />
-                <span>Spatial Matte Engine</span>
-              </span>
-              <span className="text-violet-400">Zero-Persistence Active</span>
             </div>
-          </div>
+          ) : (
+            <div className="matte-glass rounded-xl p-8 text-center text-slate-500 flex flex-col items-center justify-center min-h-[380px]">
+              <Scan className="w-10 h-10 mb-3 opacity-30 text-violet-400" />
+              <p className="font-mono text-xs font-semibold text-slate-400">
+                Awaiting Inspection Payload
+              </p>
+              <p className="text-[11px] text-slate-500 mt-1 max-w-xs font-sans">
+                Paste suspicious text or select a preset scenario on the left, then click{' '}
+                <strong className="text-slate-400 font-mono">Execute Privacy Scan</strong>.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

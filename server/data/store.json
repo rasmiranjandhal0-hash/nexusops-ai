@@ -1,0 +1,144 @@
+{
+  "customers": {
+    "demo@privacyguard.ai": {
+      "id": "demo@privacyguard.ai",
+      "email": "demo@privacyguard.ai",
+      "name": "Security Officer (Demo)",
+      "passwordHash": "DemoPass123!",
+      "createdAt": "2026-10-31T09:24:02.830Z"
+    },
+    "customer_alpha@test.com": {
+      "id": "customer_alpha@test.com",
+      "email": "customer_alpha@test.com",
+      "name": "customer_alpha",
+      "passwordHash": "auto_gen",
+      "createdAt": "2026-10-31T09:28:42.911Z"
+    },
+    "customer_beta@test.com": {
+      "id": "customer_beta@test.com",
+      "email": "customer_beta@test.com",
+      "name": "customer_beta",
+      "passwordHash": "auto_gen",
+      "createdAt": "2026-10-31T09:28:42.914Z"
+    }
+  },
+  "scans": [
+    {
+      "id": "SCN-9021",
+      "customerId": "demo@privacyguard.ai",
+      "title": "Customer Support Verification Rajesh",
+      "dateFormatted": "Oct 31, 2026, 12:30 PM",
+      "timestamp": "2026-10-31T09:10:02.817Z",
+      "risk": "Critical",
+      "score": 95,
+      "detectedCount": 3,
+      "categories": [
+        "Aadhaar Number",
+        "PAN Tax ID",
+        "Payment Card"
+      ],
+      "status": "Quarantined",
+      "explanation": "Detected critical exposure of Indian national identity numbers (Aadhaar & PAN) alongside unmasked 16-digit debit card credentials.",
+      "recommendedActions": [
+        "Immediately redact Aadhaar and PAN numbers before storing in support tickets.",
+        "Tokenize cardholder primary account numbers in accordance with PCI-DSS."
+      ],
+      "findings": [
+        {
+          "category": "Aadhaar / National ID Pattern",
+          "severity": "CRITICAL",
+          "examples": [
+            "XXXX-XXXX-4812"
+          ],
+          "description": "12-digit Indian national identity number."
+        },
+        {
+          "category": "Permanent Account Number (PAN)",
+          "severity": "HIGH",
+          "examples": [
+            "ABCDE****F"
+          ],
+          "description": "Indian tax identity number."
+        },
+        {
+          "category": "Payment Card Details (PCI-DSS)",
+          "severity": "CRITICAL",
+          "examples": [
+            "****-****-****-1092"
+          ],
+          "description": "Debit card sequence exposed."
+        }
+      ]
+    },
+    {
+      "id": "SCN-9020",
+      "customerId": "demo@privacyguard.ai",
+      "title": "State Bank KYC Suspension Scam Email",
+      "dateFormatted": "Oct 31, 2026, 11:15 AM",
+      "timestamp": "2026-10-31T08:09:02.830Z",
+      "risk": "High",
+      "score": 88,
+      "detectedCount": 2,
+      "categories": [
+        "Phishing Heuristics",
+        "Urgent Wire Transfer"
+      ],
+      "status": "Flagged",
+      "explanation": "High probability phishing coercion requesting immediate OTP sharing under threat of bank account suspension.",
+      "recommendedActions": [
+        "Never disclose one-time passwords (OTP) or authentication codes.",
+        "Quarantine message and block sender domain."
+      ],
+      "findings": [
+        {
+          "category": "OTP / Credential Request Coercion",
+          "severity": "HIGH",
+          "examples": [
+            "6-digit OTP verification code"
+          ],
+          "description": "High-risk solicitation of temporary credentials."
+        },
+        {
+          "category": "Social Engineering & Urgent Action Coercion",
+          "severity": "HIGH",
+          "examples": [
+            "account has been suspended",
+            "within 2 hours"
+          ],
+          "description": "Urgency tactics commonly seen in fraudulent campaigns."
+        }
+      ]
+    },
+    {
+      "id": "SCN-9019",
+      "customerId": "demo@privacyguard.ai",
+      "title": "Developer Prompt with Supabase Key",
+      "dateFormatted": "Oct 31, 2026, 09:40 AM",
+      "timestamp": "2026-10-31T06:14:02.830Z",
+      "risk": "Critical",
+      "score": 98,
+      "detectedCount": 2,
+      "categories": [
+        "Exposed API Secret",
+        "PostgreSQL URI"
+      ],
+      "status": "Redacted",
+      "explanation": "Unprotected database URI credentials with embedded password and OpenAI API tokens.",
+      "recommendedActions": [
+        "Rotate database passwords immediately.",
+        "Revoke exposed API keys and migrate to backend environment variables."
+      ],
+      "findings": [
+        {
+          "category": "Cloud Credentials & Secret Leak",
+          "severity": "CRITICAL",
+          "examples": [
+            "sk-proj-****",
+            "postgresql://admin:****"
+          ],
+          "description": "Sensitive access tokens."
+        }
+      ]
+    }
+  ]
+}

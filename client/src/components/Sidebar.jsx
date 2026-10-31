@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { ShieldCheck, LayoutDashboard, ScanEye, History, Settings, Lock } from 'lucide-react';
+import {
+  ShieldCheck,
+  LayoutDashboard,
+  ScanEye,
+  History,
+  Settings,
+  Lock,
+  User,
+  LogOut,
+} from 'lucide-react';
+import { getCurrentCustomer, subscribeToAuth, logoutCustomer } from '../utils/auth';
 
 export default function Sidebar({ isOpen, setIsOpen }) {
+  const [customer, setCustomer] = useState(getCurrentCustomer());
+
+  useEffect(() => {
+    const unsub = subscribeToAuth((newCust) => setCustomer(newCust));
+    return unsub;
+  }, []);
+
   const navItems = [
     { label: 'Security Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Privacy Scanner', path: '/scanner', icon: ScanEye, badge: 'Live' },
@@ -77,18 +94,39 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           })}
         </div>
 
-        {/* Bottom Status Card */}
-        <div className="p-3 border-t border-white/[0.06]">
-          <div className="matte-glass-subtle rounded-xl p-3 text-xs space-y-1.5">
+        {/* Active Customer Workspace Badge */}
+        <div className="p-3 border-t border-white/[0.06] space-y-2">
+          <div className="p-2.5 rounded-xl bg-violet-950/20 border border-violet-500/20 flex items-center justify-between font-mono">
+            <div className="flex items-center space-x-2 truncate">
+              <div className="w-6 h-6 rounded-md bg-cyan-500/15 text-cyan-300 flex items-center justify-center text-[10px] font-bold border border-cyan-400/30">
+                <User className="w-3.5 h-3.5" />
+              </div>
+              <div className="truncate">
+                <p className="text-[11px] font-semibold text-white truncate">{customer.name}</p>
+                <p className="text-[9px] text-slate-400 truncate">{customer.email}</p>
+              </div>
+            </div>
+
+            <Link
+              to="/login"
+              onClick={() => logoutCustomer()}
+              title="Sign Out / Switch Customer"
+              className="p-1 rounded text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="matte-glass-subtle rounded-xl p-2.5 text-[10px] space-y-1 font-mono">
             <div className="flex items-center justify-between text-slate-300">
-              <span className="flex items-center space-x-1.5 text-[11px] font-mono text-violet-300">
-                <Lock className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Zero Persistence</span>
+              <span className="flex items-center space-x-1.5 text-violet-300">
+                <Lock className="w-3 h-3 text-cyan-400" />
+                <span>Customer Isolated</span>
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
             </div>
-            <p className="text-[10px] text-slate-400 leading-relaxed font-mono">
-              Raw telemetry strictly isolated in volatile RAM.
+            <p className="text-[9px] text-slate-400 leading-tight">
+              Scans & reports isolated to this account profile.
             </p>
           </div>
         </div>

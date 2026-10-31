@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import analysisRoutes from './routes/analysisRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -76,6 +77,7 @@ app.get('/api/health', (req, res) => {
 
 // Mount Routes
 app.use('/api', analysisRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error Handling
 app.use(errorHandler);
