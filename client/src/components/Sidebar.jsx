@@ -1,127 +1,100 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  PlusCircle,
-  History,
-  Briefcase,
-  FileCode2,
-  Terminal,
-  Cpu,
-  ShieldCheck,
-} from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { NavLink, Link } from 'react-router-dom';
+import { ShieldCheck, LayoutDashboard, ScanEye, History, Settings, ExternalLink, Lock } from 'lucide-react';
 
-export default function Sidebar() {
-  const { user } = useAuth();
-
+export default function Sidebar({ isOpen, setIsOpen }) {
   const navItems = [
-    {
-      to: '/dashboard',
-      label: 'Mission Control',
-      icon: LayoutDashboard,
-      description: 'Telemetry & resolution KPIs',
-    },
-    {
-      to: '/missions/new',
-      label: 'Deploy Agent Mission',
-      icon: PlusCircle,
-      description: 'Intake form & scenario presets',
-    },
-    {
-      to: '/history',
-      label: 'Mission Ledger',
-      icon: History,
-      description: 'Searchable orchestration history',
-    },
-    {
-      to: '/workspaces',
-      label: 'Workspaces & Systems',
-      icon: Briefcase,
-      description: 'Enterprise registry & SLAs',
-    },
-    {
-      to: '/blueprint',
-      label: 'System Blueprint',
-      icon: FileCode2,
-      description: 'Architecture & evaluation guide',
-    },
+    { label: 'Security Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { label: 'Privacy Scanner', path: '/scanner', icon: ScanEye, badge: 'Active' },
+    { label: 'Scan History', path: '/history', icon: History },
+    { label: 'Settings & Compliance', path: '/settings', icon: Settings },
   ];
 
   return (
-    <aside className="w-64 border-r border-slate-800 bg-slate-950 flex flex-col justify-between shrink-0 hidden lg:flex min-h-[calc(100vh-4rem)]">
-      <div className="p-4 space-y-6">
-        {/* Workspace Scope Box */}
-        <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/80">
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium mb-1">
-            <span>ACTIVE WORKSPACE</span>
-            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
-              HITL Guarded
-            </span>
-          </div>
-          <div className="text-xs font-semibold text-slate-200 truncate">
-            Global Enterprise Operations
-          </div>
-          <div className="text-[11px] text-slate-500 truncate mt-0.5">
-            Operations & IT Infrastructure
-          </div>
+    <>
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-slate-950/95 border-r border-slate-800/80 backdrop-blur-xl flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Brand */}
+        <div className="h-16 px-5 border-b border-slate-800/80 flex items-center justify-between">
+          <Link to="/" className="flex items-center space-x-3 group">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-[1px] shadow-lg shadow-blue-500/20">
+              <div className="w-full h-full bg-slate-950 rounded-[7px] flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-blue-400 group-hover:scale-110 transition-transform" />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center space-x-1.5">
+                <span className="font-bold tracking-tight text-slate-100 text-sm">PRIVACYGUARD</span>
+                <span className="text-[10px] font-mono px-1 rounded bg-blue-500/20 text-blue-400 font-semibold border border-blue-500/30">
+                  AI
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-400">Security & Trust Platform</p>
+            </div>
+          </Link>
         </div>
 
-        {/* Navigation list */}
-        <nav className="space-y-1">
-          <div className="text-[11px] font-semibold tracking-wider uppercase text-slate-500 px-3 py-1">
-            Orchestration Navigation
+        {/* Navigation */}
+        <div className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          <div className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+            Operations
           </div>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
-                key={item.to}
-                to={item.to}
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-start space-x-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                  `flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
                     isActive
-                      ? 'bg-slate-900 text-cyan-300 border border-slate-700/80'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/40'
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
                   }`
                 }
               >
-                <Icon className="w-4 h-4 mt-0.5 shrink-0" />
-                <div className="truncate">
-                  <div className="text-slate-200">{item.label}</div>
-                  <div className="text-[10px] text-slate-500 font-normal leading-tight">
-                    {item.description}
-                  </div>
+                <div className="flex items-center space-x-3">
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
                 </div>
+                {item.badge && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">
+                    {item.badge}
+                  </span>
+                )}
               </NavLink>
             );
           })}
-        </nav>
-      </div>
-
-      {/* Footer Info Box */}
-      <div className="p-4 border-t border-slate-800/80 space-y-3">
-        <div className="p-2.5 rounded bg-slate-900/40 border border-slate-800 text-[11px] space-y-1">
-          <div className="flex items-center justify-between text-slate-300 font-medium">
-            <span className="flex items-center space-x-1.5">
-              <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Multi-Agent Engine</span>
-            </span>
-            <span className="text-cyan-400 font-mono text-[10px]">Gemini 2.5</span>
-          </div>
-          <div className="text-[10px] text-slate-500">
-            Planner &bull; Reasoner &bull; Executor &bull; Auditor
-          </div>
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
-          <span>NexusOps v1.0 Production</span>
-          <span className="flex items-center space-x-1">
-            <ShieldCheck className="w-3 h-3 text-emerald-400" />
-            <span>SOX / SOC-2</span>
-          </span>
+        {/* Bottom Status Card */}
+        <div className="p-3 border-t border-slate-800/80">
+          <div className="bg-slate-900/80 border border-slate-800 rounded-lg p-3 text-xs space-y-2">
+            <div className="flex items-center justify-between text-slate-300">
+              <span className="flex items-center space-x-1.5 text-[11px] font-medium">
+                <Lock className="w-3.5 h-3.5 text-blue-400" />
+                <span>Zero-Knowledge Mode</span>
+              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Analyzed content is processed client-side in sandbox memory.
+            </p>
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

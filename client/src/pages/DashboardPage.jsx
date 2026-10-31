@@ -1,325 +1,267 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  PlusCircle,
-  Activity,
-  ArrowRight,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  Server,
-  Layers,
+  ShieldAlert,
   ShieldCheck,
-  RefreshCw,
+  ScanEye,
+  FileWarning,
+  AlertTriangle,
+  ArrowUpRight,
+  TrendingDown,
+  Activity,
+  CheckCircle2,
+  Lock,
 } from 'lucide-react';
-import axiosClient from '../api/axiosClient';
-import KpiStatCard from '../components/KpiStatCard';
+import KpiCard from '../components/KpiCard';
 
 export default function DashboardPage() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const fetchSummary = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await axiosClient.get('/dashboard/summary');
-      if (res.data.success) {
-        setData(res.data.summary);
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to load telemetry summary');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSummary();
-  }, []);
-
-  const kpis = data?.kpis || {
-    totalMissions: 0,
-    autonomousResolutionRate: 100,
-    totalManualHoursSaved: 0,
-    totalCostSavingsUsd: 0,
-    avgConfidenceScore: 92,
-    awaitingHitlMissions: 0,
-    totalSystems: 4,
-    healthySystems: 4,
-  };
-
-  const domainDist = data?.domainDistribution || {};
-  const recentMissions = data?.recentMissions || [];
+  const recentActivities = [
+    {
+      id: 'SCN-9021',
+      source: 'Customer Support Transcript #412',
+      risk: 'Critical',
+      itemsCount: 3,
+      categories: ['Credit Card #', 'CVV Code', 'User Password'],
+      timestamp: '14 minutes ago',
+      status: 'Quarantined',
+    },
+    {
+      id: 'SCN-9020',
+      source: 'Executive Wire Transfer Request Email',
+      risk: 'High',
+      itemsCount: 2,
+      categories: ['Phishing Heuristics', 'Urgent Financial Trigger'],
+      timestamp: '1 hour ago',
+      status: 'Flagged',
+    },
+    {
+      id: 'SCN-9019',
+      source: 'Developer Prompt with Supabase Key',
+      risk: 'Critical',
+      itemsCount: 1,
+      categories: ['Exposed API Secret'],
+      timestamp: '3 hours ago',
+      status: 'Redacted',
+    },
+    {
+      id: 'SCN-9018',
+      source: 'Employee Onboarding Document Excerpt',
+      risk: 'Moderate',
+      itemsCount: 2,
+      categories: ['Personal Email', 'US Phone #'],
+      timestamp: '5 hours ago',
+      status: 'Reviewed',
+    },
+    {
+      id: 'SCN-9017',
+      source: 'Marketing Newsletter Draft',
+      risk: 'Low',
+      itemsCount: 0,
+      categories: ['Clean Text'],
+      timestamp: '1 day ago',
+      status: 'Clean',
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Title & Action Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-4">
+      {/* Top Banner / Welcome */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800/80">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 flex items-center space-x-2.5">
-            <span>Mission Control</span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
-              Live Telemetry
-            </span>
+          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center space-x-2">
+            <span>Security Command Dashboard</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time multi-agent execution metrics, autonomous ROI, and operational health telemetry
+            Real-time privacy exposure posture, scam indicators, and sensitive asset leakage overview.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2.5">
-          <button
-            onClick={fetchSummary}
-            className="p-2 rounded bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 transition-colors"
-            title="Refresh telemetry"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-          <Link
-            to="/missions/new"
-            className="px-4 py-2 rounded text-xs font-semibold text-slate-950 bg-cyan-400 hover:bg-cyan-300 transition-colors flex items-center space-x-1.5 shadow-md shadow-cyan-950/20"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Deploy Agent Mission</span>
-          </Link>
-        </div>
+        <Link
+          to="/scanner"
+          className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-md shadow-blue-600/20 transition-all self-start sm:self-auto"
+        >
+          <ScanEye className="w-3.5 h-3.5" />
+          <span>Launch Privacy Scanner</span>
+        </Link>
       </div>
 
-      {error && (
-        <div className="p-3.5 rounded bg-rose-950/40 border border-rose-800 text-xs text-rose-300 flex items-center justify-between">
-          <span>{error}</span>
-          <button onClick={fetchSummary} className="underline font-semibold ml-2">
-            Retry
-          </button>
-        </div>
-      )}
-
-      {/* KPI Cards Row */}
+      {/* KPI Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiStatCard
-          label="Total Agent Missions"
-          value={kpis.totalMissions}
-          badge="PostgreSQL"
-          subtext="Executed across enterprise workspaces"
+        <KpiCard
+          title="Privacy Risk Score"
+          value="78 / 100"
+          subtext="Elevated posture (3 critical leaks)"
+          change="-4 pts improvement"
+          icon={ShieldAlert}
+          color="rose"
         />
-        <KpiStatCard
-          label="Autonomous Resolution Rate"
-          value={kpis.autonomousResolutionRate}
-          unit="%"
-          positive={true}
-          change="+18.4%"
-          subtext="vs legacy manual ticket escalation"
+        <KpiCard
+          title="Data Scans Completed"
+          value="1,429"
+          subtext="Simulated heuristic runs"
+          change="+18% volume"
+          icon={ScanEye}
+          color="blue"
         />
-        <KpiStatCard
-          label="Manual Hours Saved"
-          value={kpis.totalManualHoursSaved}
-          unit="hrs"
-          positive={true}
-          change="~4.2 hrs/run"
-          subtext="Decomposed DAG execution efficiency"
+        <KpiCard
+          title="Sensitive Items Found"
+          value="348"
+          subtext="PII, Credentials, Financials"
+          change="32 quarantined today"
+          icon={FileWarning}
+          color="amber"
         />
-        <KpiStatCard
-          label="Projected Cost Avoidance"
-          value={`$${kpis.totalCostSavingsUsd.toLocaleString()}`}
-          unit="USD"
-          positive={true}
-          change="ROI 12.8x"
-          subtext="Eliminating downtime & SLA breach"
+        <KpiCard
+          title="High-Risk Alerts"
+          value="14"
+          subtext="Immediate action required"
+          change="-2 resolved"
+          icon={AlertTriangle}
+          color="purple"
         />
       </div>
 
-      {/* Secondary Metrics: HITL Alert & System Health */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* HITL Governance card */}
-        <div className="p-4 sm:p-5 rounded-lg bg-slate-900/60 border border-slate-800/80 flex flex-col justify-between">
+      {/* Two Column Grid: Risk Distribution & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Posture Breakdown */}
+        <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-5 backdrop-blur flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs text-slate-400 font-medium mb-1.5">
-              <span>HUMAN-IN-THE-LOOP (HITL) STATUS</span>
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+              <h3 className="text-sm font-semibold text-white">Privacy Risk Breakdown</h3>
+              <span className="text-[10px] font-mono text-blue-400 uppercase font-semibold">Simulated Telemetry</span>
             </div>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-bold text-slate-100 tabular-nums">
-                {kpis.awaitingHitlMissions}
-              </span>
-              <span className="text-xs text-slate-400">missions awaiting sign-off</span>
+
+            <div className="mt-4 space-y-3.5">
+              <div>
+                <div className="flex justify-between text-xs text-slate-300 mb-1">
+                  <span className="flex items-center space-x-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                    <span>Credentials & API Keys</span>
+                  </span>
+                  <span className="font-mono text-rose-400 font-bold">42%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-rose-500 rounded-full" style={{ width: '42%' }}></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs text-slate-300 mb-1">
+                  <span className="flex items-center space-x-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <span>PII (SSN, Phone, Passports)</span>
+                  </span>
+                  <span className="font-mono text-amber-400 font-bold">31%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-amber-500 rounded-full" style={{ width: '31%' }}></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs text-slate-300 mb-1">
+                  <span className="flex items-center space-x-1.5">
+                    <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                    <span>Scam & Phishing Heuristics</span>
+                  </span>
+                  <span className="font-mono text-purple-400 font-bold">18%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-purple-500 rounded-full" style={{ width: '18%' }}></div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs text-slate-300 mb-1">
+                  <span className="flex items-center space-x-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Payment & Card Data</span>
+                  </span>
+                  <span className="font-mono text-blue-400 font-bold">9%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: '9%' }}></div>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              High-impact financial disbursements, production rollback scripts, or customer status page alerts require 1-click human verification.
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-slate-800/80 bg-slate-950/40 p-3 rounded-lg text-xs space-y-2">
+            <div className="flex items-center text-blue-300 font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-blue-400" />
+              <span>Recommended Action</span>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Enable automated client-side redaction for all outgoing customer support notes.
             </p>
           </div>
-          <div className="pt-3 border-t border-slate-800/80 mt-3">
-            <Link
-              to="/history?status=AWAITING_HITL"
-              className="text-xs font-semibold text-amber-400 hover:underline flex items-center space-x-1"
-            >
-              <span>Review Pending Approval Gates</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+        </div>
+
+        {/* Right Column: Recent Scans Activity */}
+        <div className="lg:col-span-2 bg-slate-900/60 border border-slate-800/80 rounded-xl p-5 backdrop-blur flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+              <div>
+                <h3 className="text-sm font-semibold text-white">Recent Analysis Activity</h3>
+                <p className="text-[11px] text-slate-400">Audited streams and suspicious payload inspections</p>
+              </div>
+              <Link
+                to="/history"
+                className="text-xs font-medium text-blue-400 hover:text-blue-300 flex items-center space-x-1"
+              >
+                <span>View Full Log</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            <div className="mt-3 divide-y divide-slate-800/60 overflow-x-auto">
+              {recentActivities.map((act) => (
+                <div key={act.id} className="py-3 flex items-center justify-between gap-3 text-xs">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-mono text-[10px] text-slate-400 font-semibold">{act.id}</span>
+                      <span className="font-medium text-slate-200 truncate">{act.source}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {act.categories.map((c, idx) => (
+                        <span
+                          key={idx}
+                          className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-300 font-mono"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 shrink-0">
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                        act.risk === 'Critical'
+                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                          : act.risk === 'High'
+                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          : act.risk === 'Moderate'
+                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                          : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      }`}
+                    >
+                      {act.risk}
+                    </span>
+                    <span className="text-[10px] text-slate-400 hidden sm:inline">{act.timestamp}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+            <span>Showing latest 5 heuristic evaluations</span>
+            <Link to="/scanner" className="text-blue-400 hover:text-blue-300 font-medium">
+              Run New Scan &rarr;
             </Link>
           </div>
         </div>
-
-        {/* Connected Enterprise Systems Health */}
-        <div className="p-4 sm:p-5 rounded-lg bg-slate-900/60 border border-slate-800/80 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-xs text-slate-400 font-medium mb-1.5">
-              <span>CONNECTED ENTERPRISE SYSTEMS</span>
-              <Server className="w-4 h-4 text-cyan-400" />
-            </div>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-bold text-slate-100 tabular-nums">
-                {kpis.healthySystems}/{kpis.totalSystems}
-              </span>
-              <span className="text-xs text-emerald-400 font-medium">100% Operational</span>
-            </div>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              SAP S/4HANA ERP, Zendesk CRM, AWS CloudWatch, and Stripe FinOps reporting nominal latency.
-            </p>
-          </div>
-          <div className="pt-3 border-t border-slate-800/80 mt-3">
-            <Link
-              to="/workspaces"
-              className="text-xs font-semibold text-cyan-400 hover:underline flex items-center space-x-1"
-            >
-              <span>Manage System Endpoints & SLAs</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Agent Confidence & Model Telemetry */}
-        <div className="p-4 sm:p-5 rounded-lg bg-slate-900/60 border border-slate-800/80 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between text-xs text-slate-400 font-medium mb-1.5">
-              <span>REASONING CONFIDENCE INDEX</span>
-              <Activity className="w-4 h-4 text-indigo-400" />
-            </div>
-            <div className="flex items-baseline space-x-2">
-              <span className="text-2xl font-bold text-slate-100 tabular-nums">
-                {kpis.avgConfidenceScore}%
-              </span>
-              <span className="text-xs text-indigo-300 font-medium">High Precision</span>
-            </div>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-              Calculated across Gemini 2.5 Flash DAG decomposition, constraint compliance, and deterministic schema enforcement.
-            </p>
-          </div>
-          <div className="pt-3 border-t border-slate-800/80 mt-3 flex items-center justify-between text-[11px] text-slate-400">
-            <span>Model: gemini-2.5-flash</span>
-            <span className="font-mono text-cyan-400">Structured JSON</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Missions Table */}
-      <div className="rounded-lg bg-slate-900/40 border border-slate-800/80 overflow-hidden">
-        <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-100 flex items-center space-x-2">
-              <span>Recent Autonomous Missions</span>
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Latest multi-agent orchestration runs and execution status
-            </p>
-          </div>
-          <Link
-            to="/history"
-            className="text-xs font-semibold text-cyan-400 hover:underline flex items-center space-x-1"
-          >
-            <span>View Full Ledger</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        {recentMissions.length === 0 ? (
-          <div className="p-8 text-center space-y-3">
-            <p className="text-xs text-slate-400">
-              No autonomous missions have been launched yet.
-            </p>
-            <Link
-              to="/missions/new"
-              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded text-xs font-semibold text-slate-950 bg-cyan-400 hover:bg-cyan-300"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>Deploy First Agent Mission</span>
-            </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/60 text-slate-400 font-semibold">
-                  <th className="py-3 px-4">Mission Title & Workspace</th>
-                  <th className="py-3 px-4">Domain</th>
-                  <th className="py-3 px-4">Urgency</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Confidence</th>
-                  <th className="py-3 px-4 text-right">Time Saved</th>
-                  <th className="py-3 px-4 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {recentMissions.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-900/40 transition-colors">
-                    <td className="py-3 px-4">
-                      <Link
-                        to={`/missions/${m.id}`}
-                        className="font-semibold text-slate-200 hover:text-cyan-300 transition-colors"
-                      >
-                        {m.title}
-                      </Link>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        {m.workspace_name} ({m.workspace_department})
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-mono text-[11px] text-cyan-400/90">
-                        {m.domain.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`font-semibold text-[11px] ${
-                          m.urgency === 'CRITICAL' ? 'text-rose-400' : 'text-amber-400'
-                        }`}
-                      >
-                        {m.urgency}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          m.status === 'COMPLETED'
-                            ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                            : m.status === 'AWAITING_HITL'
-                            ? 'bg-amber-950 text-amber-300 border border-amber-800 animate-pulse'
-                            : 'bg-indigo-950 text-indigo-300 border border-indigo-800'
-                        }`}
-                      >
-                        {m.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono text-slate-200 tabular-nums">
-                      {m.confidence_score}%
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono text-emerald-400 tabular-nums">
-                      {Math.round(m.estimated_manual_minutes / 60 * 10) / 10}h
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <Link
-                        to={`/missions/${m.id}`}
-                        className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-medium transition-colors"
-                      >
-                        Inspect DAG
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
     </div>
   );
