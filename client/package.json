@@ -1,7 +1,8 @@
 {
-  "name": "nexusops-ai-client",
+  "name": "privacyguard-ai-client",
   "private": true,
   "version": "1.0.0",
+  "description": "PRIVACYGUARD AI - Zero-Persistence Privacy & Security Scanner",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,14 +19,14 @@
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
-    "@types/node": "^26.6.6",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
+    "@types/node": "^22.13.1",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",
-    "typescript": "^7.0.2",
+    "typescript": "^5.7.3",
     "vite": "^5.4.14"
   }
 }

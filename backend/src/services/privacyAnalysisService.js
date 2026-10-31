@@ -272,3 +272,4 @@ export function analyzePrivacyText(text) {
     disclaimer: 'PRIVACYGUARD AI analysis is advisory and provided for defensive risk mitigation. It does not constitute legal counsel or definitive forensic proof of fraud.',
   };
 }
+

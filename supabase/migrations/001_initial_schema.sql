@@ -1,5 +1,5 @@
 -- =========================================================================
--- NEXUSOPS AI: PRODUCTION POSTGRESQL SCHEMA INITIALIZATION
+-- PRIVACYGUARD AI: SECURITY & PRIVACY TELEMETRY SCHEMA
 -- =========================================================================
 
 -- Enable UUID generation

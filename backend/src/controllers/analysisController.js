@@ -37,3 +37,4 @@ export async function analyzeTextController(req, res, next) {
     return next(error);
   }
 }
+

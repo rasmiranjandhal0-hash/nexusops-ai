@@ -27,7 +27,7 @@ export function RainTextDemo() {
         <div className="relative text-center">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-800/80 text-emerald-400 text-xs font-mono mb-6 backdrop-blur">
             <Terminal className="w-3.5 h-3.5" />
-            <span>NEXUSOPS NEURAL STREAM ACTIVE</span>
+            <span>PRIVACYGUARD NEURAL THREAT STREAM ACTIVE</span>
           </div>
 
           <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-500 to-green-600 animate-pulse font-mono">
@@ -110,7 +110,7 @@ export function RainTextDemo() {
                     { label: 'Binary (01)', val: '01' },
                     { label: 'Hex (0123456789ABCDEF)', val: '0123456789ABCDEF' },
                     { label: 'Katakana / Cyber', val: 'ｦｱｳｴｵｶｷｹｺｻｼｽｾｿﾀﾂﾃﾅﾆﾇﾈﾊﾋﾎﾏﾐﾑﾒﾓﾔﾕﾗﾘﾜ' },
-                    { label: 'NexusOps Tokens', val: 'NEXUSOPS_AI_AGENT_ORCHESTRATOR' },
+                    { label: 'PrivacyGuard Tokens', val: 'PRIVACYGUARD_AI_SECURITY_SCANNER' },
                   ].map((preset) => (
                     <button
                       key={preset.label}

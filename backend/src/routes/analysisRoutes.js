@@ -7,3 +7,4 @@ const router = express.Router();
 router.post('/analyze', analyzeTextController);
 
 export default router;
+
