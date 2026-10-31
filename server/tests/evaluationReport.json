@@ -1,0 +1,604 @@
+{
+  "total": 50,
+  "tp": 44,
+  "tn": 6,
+  "fp": 0,
+  "fn": 0,
+  "accuracy": 100,
+  "precision": 100,
+  "recall": 100,
+  "f1Score": 100,
+  "totalTimeMs": 5,
+  "categoryStats": {
+    "Synthetic Aadhaar Identifiers": {
+      "total": 2,
+      "correct": 2
+    },
+    "Synthetic PAN Identifiers": {
+      "total": 2,
+      "correct": 2
+    },
+    "Synthetic Credit Card Numbers": {
+      "total": 2,
+      "correct": 2
+    },
+    "Email Address Exposure": {
+      "total": 2,
+      "correct": 2
+    },
+    "Phone Number Exposure": {
+      "total": 2,
+      "correct": 2
+    },
+    "Dummy API Key Exposure": {
+      "total": 2,
+      "correct": 2
+    },
+    "Password String Exposure": {
+      "total": 2,
+      "correct": 2
+    },
+    "Fake Database Connection Strings": {
+      "total": 2,
+      "correct": 2
+    },
+    "Suspicious Reserved URLs": {
+      "total": 2,
+      "correct": 2
+    },
+    "Phishing Messages": {
+      "total": 2,
+      "correct": 2
+    },
+    "Social Engineering & Coercion": {
+      "total": 2,
+      "correct": 2
+    },
+    "Prompt Injection Attempts": {
+      "total": 2,
+      "correct": 2
+    },
+    "Malicious HTML Payloads": {
+      "total": 2,
+      "correct": 2
+    },
+    "SQL Injection Strings": {
+      "total": 2,
+      "correct": 2
+    },
+    "XSS Test Strings": {
+      "total": 2,
+      "correct": 2
+    },
+    "Harmless Operational Text": {
+      "total": 5,
+      "correct": 5
+    },
+    "Mixed Sensitive & Harmless Text": {
+      "total": 3,
+      "correct": 3
+    },
+    "Obfuscated Sensitive Patterns": {
+      "total": 3,
+      "correct": 3
+    },
+    "Repeated Identifiers": {
+      "total": 3,
+      "correct": 3
+    },
+    "Multilingual Text": {
+      "total": 4,
+      "correct": 4
+    },
+    "Credential Solicitation": {
+      "total": 1,
+      "correct": 1
+    },
+    "SSRF & Internal Probing": {
+      "total": 1,
+      "correct": 1
+    }
+  },
+  "caseResults": [
+    {
+      "testId": "TC-01",
+      "category": "Synthetic Aadhaar Identifiers",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 50,
+      "correctness": true,
+      "timeMs": 1
+    },
+    {
+      "testId": "TC-02",
+      "category": "Synthetic Aadhaar Identifiers",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 50,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-03",
+      "category": "Synthetic PAN Identifiers",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 40,
+      "correctness": true,
+      "timeMs": 1
+    },
+    {
+      "testId": "TC-04",
+      "category": "Synthetic PAN Identifiers",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 40,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-05",
+      "category": "Synthetic Credit Card Numbers",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 100,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-06",
+      "category": "Synthetic Credit Card Numbers",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 100,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-07",
+      "category": "Email Address Exposure",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "LOW",
+      "score": 12,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-08",
+      "category": "Email Address Exposure",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "LOW",
+      "score": 12,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-09",
+      "category": "Phone Number Exposure",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 50,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-10",
+      "category": "Phone Number Exposure",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "LOW",
+      "score": 15,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-11",
+      "category": "Dummy API Key Exposure",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "LOW",
+      "score": 15,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-12",
+      "category": "Dummy API Key Exposure",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 65,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-13",
+      "category": "Password String Exposure",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 50,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-14",
+      "category": "Password String Exposure",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 35,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-15",
+      "category": "Fake Database Connection Strings",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 62,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-16",
+      "category": "Fake Database Connection Strings",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "LOW",
+      "score": 12,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-17",
+      "category": "Suspicious Reserved URLs",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 65,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-18",
+      "category": "Suspicious Reserved URLs",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 35,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-19",
+      "category": "Phishing Messages",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 35,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-20",
+      "category": "Phishing Messages",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 35,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-21",
+      "category": "Social Engineering & Coercion",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 35,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-22",
+      "category": "Social Engineering & Coercion",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 35,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-23",
+      "category": "Prompt Injection Attempts",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 55,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-24",
+      "category": "Prompt Injection Attempts",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 55,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-25",
+      "category": "Malicious HTML Payloads",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 85,
+      "correctness": true,
+      "timeMs": 1
+    },
+    {
+      "testId": "TC-26",
+      "category": "Malicious HTML Payloads",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 55,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-27",
+      "category": "SQL Injection Strings",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 55,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-28",
+      "category": "SQL Injection Strings",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 55,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-29",
+      "category": "XSS Test Strings",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 85,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-30",
+      "category": "XSS Test Strings",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 85,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-31",
+      "category": "Harmless Operational Text",
+      "expected": "CLEAN",
+      "actual": "CLEAN",
+      "riskLevel": "LOW",
+      "score": 0,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-32",
+      "category": "Harmless Operational Text",
+      "expected": "CLEAN",
+      "actual": "CLEAN",
+      "riskLevel": "LOW",
+      "score": 0,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-33",
+      "category": "Harmless Operational Text",
+      "expected": "CLEAN",
+      "actual": "CLEAN",
+      "riskLevel": "LOW",
+      "score": 0,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-34",
+      "category": "Harmless Operational Text",
+      "expected": "CLEAN",
+      "actual": "CLEAN",
+      "riskLevel": "LOW",
+      "score": 0,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-35",
+      "category": "Harmless Operational Text",
+      "expected": "CLEAN",
+      "actual": "CLEAN",
+      "riskLevel": "LOW",
+      "score": 0,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-36",
+      "category": "Mixed Sensitive & Harmless Text",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 100,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-37",
+      "category": "Mixed Sensitive & Harmless Text",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 40,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-38",
+      "category": "Mixed Sensitive & Harmless Text",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 62,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-39",
+      "category": "Obfuscated Sensitive Patterns",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 50,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-40",
+      "category": "Obfuscated Sensitive Patterns",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 100,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-41",
+      "category": "Obfuscated Sensitive Patterns",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 25,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-42",
+      "category": "Repeated Identifiers",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 50,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-43",
+      "category": "Repeated Identifiers",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 40,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-44",
+      "category": "Repeated Identifiers",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 100,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-45",
+      "category": "Multilingual Text",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 95,
+      "correctness": true,
+      "timeMs": 1
+    },
+    {
+      "testId": "TC-46",
+      "category": "Multilingual Text",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "MEDIUM",
+      "score": 45,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-47",
+      "category": "Multilingual Text",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "LOW",
+      "score": 12,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-48",
+      "category": "Multilingual Text",
+      "expected": "CLEAN",
+      "actual": "CLEAN",
+      "riskLevel": "LOW",
+      "score": 0,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-49",
+      "category": "Credential Solicitation",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "HIGH",
+      "score": 70,
+      "correctness": true,
+      "timeMs": 0
+    },
+    {
+      "testId": "TC-50",
+      "category": "SSRF & Internal Probing",
+      "expected": "FLAGGED",
+      "actual": "FLAGGED",
+      "riskLevel": "CRITICAL",
+      "score": 100,
+      "correctness": true,
+      "timeMs": 1
+    }
+  ]
+}

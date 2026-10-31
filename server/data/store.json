@@ -20,6 +20,15 @@
       "name": "customer_beta",
       "passwordHash": "auto_gen",
       "createdAt": "2026-10-31T09:28:42.914Z"
+    },
+    "admin@nexusops.ai": {
+      "id": "admin@nexusops.ai",
+      "email": "admin@nexusops.ai",
+      "name": "Principal Security Admin",
+      "role": "admin",
+      "passwordHash": "$2b$12$qrmI0xj5S.R9aFzLbc7VieQHvuXs6hli4ZJj3orf1mQ1GVm.UtMMq",
+      "organization": "NexusOps AI Security Operations",
+      "createdAt": "2026-10-31T10:10:04.265Z"
     }
   },
   "scans": [
@@ -140,5 +149,10 @@
         }
       ]
     }
-  ]
+  ],
+  "verifications": [],
+  "datasets": [],
+  "datasetRecords": [],
+  "notifications": [],
+  "auditLogs": []
 }

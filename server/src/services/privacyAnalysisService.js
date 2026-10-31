@@ -241,6 +241,113 @@ function analyzeWithHeuristics(text) {
     actions.add('Do not click short links or unverified URLs received in unsolicited messages.');
   }
 
+  // 9. API Keys, Tokens & Credentials (Stripe, AWS, Passwords)
+  const secretPatterns = [
+    /\b(?:sk_live_|sk_test_)[a-zA-Z0-9]{20,}\b/g,
+    /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g,
+    /\b(?:password|passcode|root passcode|dbpass)\s*[:=]\s*[^\s]{6,}\b/gi,
+    /\b(?:postgresql|mongodb|mysql):\/\/[^\s]+/gi,
+  ];
+
+  let matchedSecrets = [];
+  for (const regex of secretPatterns) {
+    const hits = text.match(regex);
+    if (hits) matchedSecrets = matchedSecrets.concat(hits);
+  }
+
+  if (matchedSecrets.length > 0) {
+    calculatedScore += 50;
+    findings.push({
+      category: 'Exposed Secrets & Database Credentials',
+      severity: 'CRITICAL',
+      count: matchedSecrets.length,
+      examples: matchedSecrets.slice(0, 2).map((s) => `${s.slice(0, 8)}...[REDACTED]`),
+      description: 'API secret keys, database connection strings, or plaintext credentials exposed.',
+    });
+    reasons.push('Unprotected API secrets or database connection strings');
+    actions.add('Revoke and rotate exposed credentials immediately.');
+  }
+
+  // 10. Prompt Injection & Jailbreak Attempts
+  const promptInjectionRegex = /\b(?:ignore (?:all )?previous (?:security )?instructions|system override|you are now in (?:debug|god|developer) mode|bypass (?:privacy|safety) filter|output (?:the )?system prompt)\b/gi;
+  const injectionHits = text.match(promptInjectionRegex) || [];
+  if (injectionHits.length > 0) {
+    calculatedScore += 55;
+    findings.push({
+      category: 'AI Prompt Injection Attack Attempt',
+      severity: 'HIGH',
+      count: injectionHits.length,
+      examples: injectionHits.slice(0, 2).map((h) => `[Injection attempt: "${h}"]`),
+      description: 'Adversarial prompt injection pattern attempting to hijack AI execution or leak system prompts.',
+    });
+    reasons.push('Adversarial prompt injection attack pattern');
+    actions.add('Sanitize inputs and quarantine payloads attempting to manipulate system instructions.');
+  }
+
+  // 11. SQL Injection & Web Exploits
+  const sqliRegex = /\b(?:UNION\s+SELECT|OR\s+['"]?1['"]?\s*=\s*['"]?1|DROP\s+TABLE|INSERT\s+INTO|DELETE\s+FROM|--\s*$)\b|'\s*OR\s*'1'\s*=\s*'1/gi;
+  const sqliHits = text.match(sqliRegex) || [];
+  if (sqliHits.length > 0) {
+    calculatedScore += 55;
+    findings.push({
+      category: 'SQL Injection Attack Vector',
+      severity: 'HIGH',
+      count: sqliHits.length,
+      examples: sqliHits.slice(0, 2).map((h) => `[SQLi payload: "${h}"]`),
+      description: 'SQL syntax manipulation string indicative of database exploitation attempt.',
+    });
+    reasons.push('SQL injection attack pattern identified');
+    actions.add('Enforce parameterized queries and prepared statements.');
+  }
+
+  // 12. Malicious HTML / XSS / Form Droppers
+  const xssRegex = /<script[\s>]|<iframe[^>]*src=["']?javascript:|<form[^>]*action=|<img[^>]+onerror=|<svg[^>]+onload=/gi;
+  const xssHits = text.match(xssRegex) || [];
+  if (xssHits.length > 0) {
+    calculatedScore += 55;
+    findings.push({
+      category: 'XSS & Malicious HTML Payload',
+      severity: 'HIGH',
+      count: xssHits.length,
+      examples: xssHits.slice(0, 2).map((h) => `[Script/DOM trigger: "${h.slice(0, 25)}..."]`),
+      description: 'Executable JavaScript, fake credential phishing form, or DOM injection string detected.',
+    });
+    reasons.push('Cross-Site Scripting (XSS) or phishing DOM injection detected');
+    actions.add('Apply strict HTML entity encoding and Content Security Policy (CSP).');
+  }
+
+  // 13. Obfuscated Email Representation
+  const obfuscatedEmailRegex = /\b[a-zA-Z0-9._%+-]+\s*(?:\[at\]|\(at\))\s*[a-zA-Z0-9.-]+\s*(?:\[dot\]|\(dot\))\s*[a-zA-Z]{2,}\b/gi;
+  const obfEmailHits = text.match(obfuscatedEmailRegex) || [];
+  if (obfEmailHits.length > 0) {
+    calculatedScore += 25;
+    findings.push({
+      category: 'Obfuscated Email Address',
+      severity: 'MEDIUM',
+      count: obfEmailHits.length,
+      examples: obfEmailHits.slice(0, 2),
+      description: 'Obfuscated email string designed to bypass naive regex filters.',
+    });
+    reasons.push('Obfuscated contact email detected');
+    actions.add('Mask contact information to prevent scraping.');
+  }
+
+  // 14. Multilingual Threat & Coercion (Hindi / Devanagari Regional)
+  const regionalThreatRegex = /(?:आधार|खाता|निलंबित|ओटीपी|सत्यापन|पैन|बैंक)/gu;
+  const regionalHits = text.match(regionalThreatRegex) || [];
+  if (regionalHits.length > 0) {
+    calculatedScore += 45;
+    findings.push({
+      category: 'Multilingual Coercion & Bank Scams',
+      severity: 'HIGH',
+      count: regionalHits.length,
+      examples: regionalHits.slice(0, 3).map((w) => `[Regional marker: "${w}"]`),
+      description: 'Regional language high-pressure banking coercion or Aadhaar/OTP solicitation.',
+    });
+    reasons.push('Regional language urgency or identity verification trigger');
+    actions.add('Exercise caution with unsolicited regional language messages requesting OTPs.');
+  }
+
   const finalScore = Math.min(Math.max(calculatedScore, 0), 100);
 
   let riskLevel = 'LOW';
