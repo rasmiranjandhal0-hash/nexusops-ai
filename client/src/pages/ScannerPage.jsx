@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import {
   Scan,
-  ShieldAlert,
   ShieldCheck,
   AlertTriangle,
-  FileWarning,
-  CheckCircle,
   Copy,
   RefreshCw,
-  Sparkles,
   Info,
   Lock,
-  ArrowRight,
   Server,
   WifiOff,
+  CheckCircle,
 } from 'lucide-react';
 import axiosClient from '../api/axiosClient';
 
@@ -52,15 +48,13 @@ export default function ScannerPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [backendStatus, setBackendStatus] = useState(null); // 'online' | 'fallback'
+  const [backendStatus, setBackendStatus] = useState(null);
 
-  // Analyze function calling backend with graceful client-side fallback
   const handleAnalyze = async () => {
     if (!inputText.trim()) return;
     setIsScanning(true);
 
     try {
-      // 1. Attempt call to secure backend API
       const response = await axiosClient.post('/analyze', { text: inputText });
       if (response.data && response.data.riskLevel) {
         setScanResult(response.data);
@@ -72,7 +66,7 @@ export default function ScannerPage() {
       console.warn('Backend API offline or unreachable. Triggering client-side fallback engine:', err.message);
     }
 
-    // 2. Client-side heuristic fallback if backend server is not running
+    // Client fallback
     setTimeout(() => {
       const lower = inputText.toLowerCase();
       let riskScore = 10;
@@ -162,13 +156,13 @@ export default function ScannerPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="pb-2 border-b border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="pb-2 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center space-x-2">
-            <span>Privacy & Sensitive Data Scanner</span>
+          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center space-x-2 font-mono">
+            <span>Spatial Privacy Scanner</span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Detect Aadhaar, PAN, payment cards, credentials, phone numbers, and scam patterns with zero persistence.
+          <p className="text-xs text-slate-400 mt-1 font-mono">
+            Zero-persistence heuristic inspection: Aadhaar, PAN, Cards, Credentials, and Scam Coercion.
           </p>
         </div>
 
@@ -176,19 +170,19 @@ export default function ScannerPage() {
           <div
             className={`px-3 py-1.5 rounded-lg border text-xs font-mono flex items-center space-x-2 self-start sm:self-auto ${
               backendStatus === 'online'
-                ? 'bg-emerald-950/50 border-emerald-800/80 text-emerald-300'
-                : 'bg-amber-950/50 border-amber-800/80 text-amber-300'
+                ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
+                : 'bg-amber-950/40 border-amber-500/30 text-amber-300'
             }`}
           >
             {backendStatus === 'online' ? (
               <>
                 <Server className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Backend API: Online (POST /api/analyze)</span>
+                <span>API Online (POST /api/analyze)</span>
               </>
             ) : (
               <>
                 <WifiOff className="w-3.5 h-3.5 text-amber-400" />
-                <span>Backend Offline: Client Fallback Active</span>
+                <span>Backend Offline (Client Fallback)</span>
               </>
             )}
           </div>
@@ -196,10 +190,10 @@ export default function ScannerPage() {
       </div>
 
       {/* Preset Selector */}
-      <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 backdrop-blur space-y-2">
-        <div className="flex items-center justify-between text-xs text-slate-300">
-          <span className="font-semibold text-slate-200">Load Test Payload Scenarios:</span>
-          <span className="text-[11px] text-slate-400">Click to autofill sample text</span>
+      <div className="glass-panel rounded-xl p-4 space-y-2">
+        <div className="flex items-center justify-between text-xs text-slate-300 font-mono">
+          <span className="font-semibold text-sky-300">Preset Inspection Scenarios:</span>
+          <span className="text-[11px] text-slate-400">Click to autofill sample payload</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {PRESETS.map((p, idx) => (
@@ -210,7 +204,7 @@ export default function ScannerPage() {
                 setScanResult(null);
                 setBackendStatus(null);
               }}
-              className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/80 text-slate-200 transition-colors"
+              className="text-xs font-mono px-3 py-1.5 rounded-lg glass-panel-subtle hover:border-sky-400/50 text-slate-200 transition-all hover:scale-105"
             >
               {p.label}
             </button>
@@ -218,14 +212,14 @@ export default function ScannerPage() {
         </div>
       </div>
 
-      {/* Main Input & Analysis Area */}
+      {/* Main Input & Analysis Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Input Box */}
+        {/* Left: Input Payload Box */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 backdrop-blur shadow-xl space-y-3">
+          <div className="glass-panel rounded-xl p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
-                <Scan className="w-4 h-4 text-blue-400" />
+              <label className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
+                <Scan className="w-4 h-4 text-sky-400" />
                 <span>Text / Document Payload to Inspect</span>
               </label>
               <span className="text-[11px] font-mono text-slate-400">{inputText.length} characters</span>
@@ -235,17 +229,17 @@ export default function ScannerPage() {
               rows={12}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Paste suspicious customer email, transaction details, or prompt here..."
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-lg p-3.5 text-xs sm:text-sm font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 leading-relaxed transition-all resize-y"
+              placeholder="Paste suspicious text or communication here..."
+              className="w-full bg-black/60 border border-white/10 rounded-lg p-3.5 text-xs sm:text-sm font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-sky-400/80 focus:ring-1 focus:ring-sky-400/40 leading-relaxed transition-all resize-y"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-              <div className="flex items-center space-x-2 text-[11px] text-slate-400">
-                <Lock className="w-3.5 h-3.5 text-blue-400" />
-                <span>Zero Persistence: Raw text is never stored or logged</span>
+              <div className="flex items-center space-x-2 text-[11px] text-slate-400 font-mono">
+                <Lock className="w-3.5 h-3.5 text-sky-400" />
+                <span>Zero Persistence Guarantee</span>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 font-mono">
                 <button
                   type="button"
                   onClick={() => {
@@ -253,7 +247,7 @@ export default function ScannerPage() {
                     setScanResult(null);
                     setBackendStatus(null);
                   }}
-                  className="px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors"
+                  className="px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-colors"
                 >
                   Clear
                 </button>
@@ -261,12 +255,12 @@ export default function ScannerPage() {
                   type="button"
                   onClick={handleAnalyze}
                   disabled={isScanning || !inputText.trim()}
-                  className="px-5 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/30 transition-all flex items-center space-x-2"
+                  className="px-5 py-2 rounded-lg text-xs font-semibold text-black bg-sky-400 hover:bg-sky-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(56,189,248,0.3)] transition-all flex items-center space-x-2 hover:scale-105"
                 >
                   {isScanning ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Analyzing Privacy Risk...</span>
+                      <span>Scanning Anomaly Flux...</span>
                     </>
                   ) : (
                     <>
@@ -282,55 +276,55 @@ export default function ScannerPage() {
 
         {/* Right: Results Panel */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="bg-slate-900/70 border border-slate-800/80 rounded-xl p-5 backdrop-blur shadow-xl min-h-[460px] flex flex-col justify-between">
+          <div className="glass-panel rounded-xl p-5 min-h-[460px] flex flex-col justify-between">
             {scanResult ? (
               <div className="space-y-4">
                 {/* Result Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+                <div className="flex items-center justify-between pb-3 border-b border-white/10 font-mono">
                   <div className="flex items-center space-x-2">
                     <span
                       className={`text-xs font-bold px-2.5 py-1 rounded-md border ${
                         scanResult.riskLevel === 'CRITICAL'
-                          ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
                           : scanResult.riskLevel === 'HIGH'
-                          ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
                           : scanResult.riskLevel === 'MEDIUM'
-                          ? 'bg-purple-500/20 text-purple-400 border-purple-500/40'
-                          : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                          ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                       }`}
                     >
-                      {scanResult.riskLevel} RISK LEVEL
+                      {scanResult.riskLevel} RISK
                     </span>
                     <span className="text-[11px] font-mono text-slate-300 font-bold">
                       Score: {scanResult.riskScore}/100
                     </span>
                   </div>
 
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-950/60 text-blue-300 border border-blue-800/60 font-semibold">
-                    {backendStatus === 'online' ? 'Live API Validated' : 'Simulated Heuristics'}
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-sky-500/10 text-sky-300 border border-sky-400/30 font-semibold">
+                    {backendStatus === 'online' ? 'Live API Validated' : 'Heuristic Engine'}
                   </span>
                 </div>
 
                 {/* Detected Categories & Masked Examples */}
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                    Detected Findings ({scanResult.findings.length})
+                  <p className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                    Findings ({scanResult.findings.length})
                   </p>
                   <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                     {scanResult.findings.map((f, idx) => (
                       <div
                         key={idx}
-                        className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 text-xs space-y-1"
+                        className="p-2.5 rounded-lg glass-panel-subtle text-xs space-y-1 font-mono"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-slate-200">{f.category}</span>
+                          <span className="font-semibold text-white">{f.category}</span>
                           <span
-                            className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                            className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                               f.severity === 'CRITICAL'
-                                ? 'text-rose-400 bg-rose-500/10'
+                                ? 'text-rose-300 bg-rose-500/10'
                                 : f.severity === 'HIGH'
-                                ? 'text-amber-400 bg-amber-500/10'
-                                : 'text-blue-400 bg-blue-500/10'
+                                ? 'text-amber-300 bg-amber-500/10'
+                                : 'text-sky-300 bg-sky-500/10'
                             }`}
                           >
                             {f.severity}
@@ -342,7 +336,7 @@ export default function ScannerPage() {
                             {f.examples.map((ex, i) => (
                               <span
                                 key={i}
-                                className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-blue-300"
+                                className="text-[10px] px-1.5 py-0.5 rounded bg-black/60 border border-white/10 text-sky-300"
                               >
                                 {ex}
                               </span>
@@ -356,23 +350,23 @@ export default function ScannerPage() {
 
                 {/* Explanation */}
                 {scanResult.explanation && (
-                  <div className="text-xs text-slate-300 bg-slate-950/40 p-2.5 rounded-lg border border-slate-800/80">
-                    <p className="text-[10px] uppercase font-mono text-slate-400 font-semibold mb-1">Assessment</p>
-                    <p className="leading-relaxed text-[11px]">{scanResult.explanation}</p>
+                  <div className="text-xs text-slate-300 glass-panel-subtle p-2.5 rounded-lg font-mono">
+                    <p className="text-[10px] uppercase text-sky-400 font-semibold mb-1">Assessment</p>
+                    <p className="leading-relaxed text-[11px] text-slate-300">{scanResult.explanation}</p>
                   </div>
                 )}
 
                 {/* Recommended Actions */}
                 {scanResult.recommendedActions && scanResult.recommendedActions.length > 0 && (
-                  <div className="bg-slate-950/70 border border-slate-800/80 rounded-lg p-3 text-xs space-y-1.5">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-400 flex items-center space-x-1">
-                      <CheckCircle className="w-3.5 h-3.5" />
+                  <div className="glass-panel-subtle rounded-lg p-3 text-xs space-y-1.5 font-mono">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-sky-300 flex items-center space-x-1">
+                      <CheckCircle className="w-3.5 h-3.5 text-sky-400" />
                       <span>Recommended Safe Actions</span>
                     </p>
                     <ul className="space-y-1 text-slate-300 text-[11px]">
                       {scanResult.recommendedActions.map((act, idx) => (
                         <li key={idx} className="flex items-start space-x-1.5">
-                          <span className="text-blue-400 font-bold">•</span>
+                          <span className="text-sky-400 font-bold">•</span>
                           <span>{act}</span>
                         </li>
                       ))}
@@ -384,7 +378,7 @@ export default function ScannerPage() {
                 <button
                   type="button"
                   onClick={handleCopyRedacted}
-                  className="w-full py-2 rounded-lg text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors flex items-center justify-center space-x-2"
+                  className="w-full py-2 rounded-lg text-xs font-mono font-semibold text-slate-200 glass-panel-subtle hover:border-sky-400/50 transition-all flex items-center justify-center space-x-2"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>{copied ? 'Copied Redacted Version!' : 'Copy Redacted Text to Clipboard'}</span>
@@ -392,28 +386,28 @@ export default function ScannerPage() {
 
                 {/* Disclaimer */}
                 {scanResult.disclaimer && (
-                  <p className="text-[10px] text-slate-500 italic leading-tight">{scanResult.disclaimer}</p>
+                  <p className="text-[10px] text-slate-500 italic leading-tight font-mono">{scanResult.disclaimer}</p>
                 )}
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 my-auto">
-                <div className="w-12 h-12 rounded-xl bg-slate-800/60 border border-slate-800 flex items-center justify-center mb-3 text-slate-400">
-                  <ShieldCheck className="w-6 h-6 text-slate-400" />
+                <div className="w-12 h-12 rounded-xl glass-panel-subtle flex items-center justify-center mb-3 text-sky-400 shadow-[0_0_20px_rgba(56,189,248,0.2)]">
+                  <ShieldCheck className="w-6 h-6" />
                 </div>
-                <h4 className="text-sm font-semibold text-slate-300">Awaiting Input Payload</h4>
-                <p className="text-xs text-slate-400 max-w-xs mt-1 leading-relaxed">
+                <h4 className="text-sm font-semibold text-slate-200 font-mono">Awaiting Input Payload</h4>
+                <p className="text-xs text-slate-400 max-w-xs mt-1 leading-relaxed font-mono">
                   Paste content or select a preset scenario above, then click "Analyze Privacy Risk".
                 </p>
               </div>
             )}
 
             {/* Bottom Status Banner */}
-            <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
+            <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400 font-mono">
               <span className="flex items-center space-x-1">
-                <Info className="w-3.5 h-3.5 text-blue-400" />
-                <span>Express API + Regex Heuristics</span>
+                <Info className="w-3.5 h-3.5 text-sky-400" />
+                <span>Spatial Glass Engine</span>
               </span>
-              <span className="font-mono text-slate-400">Phase 2: Ready for AI</span>
+              <span className="text-slate-400">Zero-Persistence Active</span>
             </div>
           </div>
         </div>

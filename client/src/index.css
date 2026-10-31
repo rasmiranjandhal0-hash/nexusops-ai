@@ -2,35 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: 0, 0%, 0%;
+  --foreground: 0, 100%, 100%;
+  --sky-300: 203, 92%, 53%;
+  --gray-300: 0, 0%, 70%;
+}
+
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 font-sans tracking-tight;
+    @apply bg-black text-slate-100 font-sans tracking-tight overflow-x-hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Crisp tabular numbers for financial and SLA stats */
+  /* Crisp tabular numbers */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
 }
 
+/* Spatial Glass UI Utilities */
+.glass-panel {
+  background: rgba(6, 11, 25, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-subtle {
+  background: rgba(8, 14, 30, 0.40);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.45);
+}
+
+.glass-glow-sky {
+  box-shadow: 0 0 35px -5px rgba(56, 189, 248, 0.3);
+}
+
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #070b14;
+  background: #030712;
 }
 ::-webkit-scrollbar-thumb {
   background: #1e293b;
-  border-radius: 3px;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #38bdf8;
 }
 
-/* Monospace pre code formatting */
-pre code {
-  font-family: 'JetBrains Mono', Consolas, monospace;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-long {
+  animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

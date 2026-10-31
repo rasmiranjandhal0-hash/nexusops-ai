@@ -8,28 +8,27 @@ import {
   FileText,
   AlertTriangle,
   Download,
-  Trash2,
 } from 'lucide-react';
 
 const INITIAL_HISTORY = [
   {
     id: 'SCN-9021',
-    name: 'Customer Support Transcript #412',
+    name: 'Customer Support Verification Rajesh',
     date: 'Oct 31, 2026 12:30 PM',
     risk: 'Critical',
-    score: 94,
+    score: 95,
     detectedCount: 3,
-    categories: ['SSN', 'Credit Card', 'Password'],
+    categories: ['Aadhaar Number', 'PAN Tax ID', 'Payment Card'],
     status: 'Quarantined',
   },
   {
     id: 'SCN-9020',
-    name: 'Executive Wire Transfer Request Email',
+    name: 'State Bank KYC Suspension Scam Email',
     date: 'Oct 31, 2026 11:15 AM',
     risk: 'High',
-    score: 86,
+    score: 88,
     detectedCount: 2,
-    categories: ['Wire Fraud / BEC', 'Urgency Coercion'],
+    categories: ['Phishing Heuristics', 'Deceptive Domain'],
     status: 'Flagged',
   },
   {
@@ -38,7 +37,7 @@ const INITIAL_HISTORY = [
     date: 'Oct 31, 2026 09:40 AM',
     risk: 'Critical',
     score: 98,
-    detectedCount: 1,
+    detectedCount: 2,
     categories: ['PostgreSQL URI', 'AWS Secret'],
     status: 'Redacted',
   },
@@ -49,12 +48,12 @@ const INITIAL_HISTORY = [
     risk: 'Moderate',
     score: 45,
     detectedCount: 2,
-    categories: ['Personal Email', 'US Phone #'],
+    categories: ['Personal Email', 'Phone Number'],
     status: 'Reviewed',
   },
   {
     id: 'SCN-9017',
-    name: 'Marketing Newsletter Draft Q4',
+    name: 'Security Audit Documentation Q4',
     date: 'Oct 30, 2026 01:10 PM',
     risk: 'Low',
     score: 8,
@@ -62,24 +61,13 @@ const INITIAL_HISTORY = [
     categories: ['Clean Text'],
     status: 'Clean',
   },
-  {
-    id: 'SCN-9016',
-    name: 'Salesforce API Webhook Payload Sample',
-    date: 'Oct 29, 2026 06:45 PM',
-    risk: 'High',
-    score: 82,
-    detectedCount: 2,
-    categories: ['OAuth Token', 'Customer Email'],
-    status: 'Flagged',
-  },
 ];
 
 export default function HistoryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRisk, setFilterRisk] = useState('ALL');
-  const [historyList, setHistoryList] = useState(INITIAL_HISTORY);
 
-  const filtered = historyList.filter((item) => {
+  const filtered = INITIAL_HISTORY.filter((item) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.id.toLowerCase().includes(searchTerm.toLowerCase());
@@ -90,10 +78,10 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/10 font-mono">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center space-x-2">
-            <span>Analysis & Scan History</span>
+            <span>Spatial Inspection Ledger</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
             Immutable inspection audit trail of examined documents, messages, and simulated detections.
@@ -101,7 +89,7 @@ export default function HistoryPage() {
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="text-xs font-mono text-slate-400">{filtered.length} records</span>
+          <span className="text-xs font-mono text-sky-400">{filtered.length} records</span>
         </div>
       </div>
 
@@ -114,19 +102,19 @@ export default function HistoryPage() {
             placeholder="Search scans by identifier or document name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-900/70 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full glass-panel rounded-lg pl-9 pr-4 py-2 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-400/80"
           />
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 font-mono">
           {['ALL', 'CRITICAL', 'HIGH', 'MODERATE', 'LOW'].map((risk) => (
             <button
               key={risk}
               onClick={() => setFilterRisk(risk)}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                 filterRisk === risk
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  ? 'bg-sky-400 text-black font-bold shadow-[0_0_15px_rgba(56,189,248,0.3)]'
+                  : 'glass-panel-subtle text-slate-400 hover:text-white'
               }`}
             >
               {risk}
@@ -135,59 +123,59 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl overflow-hidden backdrop-blur shadow-xl">
+      {/* Table in Spatial Glass Panel */}
+      <div className="glass-panel rounded-xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-xs font-mono">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-semibold uppercase text-slate-400 tracking-wider">
-                <th className="py-3 px-4">Scan ID & Document</th>
+              <tr className="border-b border-white/10 bg-black/40 text-[11px] font-semibold uppercase text-slate-400 tracking-wider">
+                <th className="py-3 px-4">Scan ID & Payload</th>
                 <th className="py-3 px-4">Timestamp</th>
                 <th className="py-3 px-4">Risk Level</th>
-                <th className="py-3 px-4">Risk Score</th>
+                <th className="py-3 px-4">Score</th>
                 <th className="py-3 px-4">Detected Vectors</th>
-                <th className="py-3 px-4">Enforcement Status</th>
+                <th className="py-3 px-4">Enforcement</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
+            <tbody className="divide-y divide-white/5 text-slate-300">
               {filtered.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-850/50 transition-colors">
+                <tr key={row.id} className="hover:bg-white/5 transition-colors">
                   <td className="py-3.5 px-4">
                     <div className="font-semibold text-white">{row.name}</div>
-                    <div className="font-mono text-[10px] text-slate-500">{row.id}</div>
+                    <div className="font-mono text-[10px] text-sky-400">{row.id}</div>
                   </td>
-                  <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-slate-400 text-[11px] whitespace-nowrap">
                     {row.date}
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                         row.risk === 'Critical'
-                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                           : row.risk === 'High'
-                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                           : row.risk === 'Moderate'
-                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                          : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                       }`}
                     >
                       {row.risk}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4 font-mono font-bold text-slate-200">
+                  <td className="py-3.5 px-4 font-bold text-white">
                     {row.score} / 100
                   </td>
                   <td className="py-3.5 px-4">
                     <div className="flex flex-wrap gap-1 max-w-xs">
                       {row.categories.map((c, i) => (
-                        <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
+                        <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-black/60 text-slate-300 border border-white/5">
                           {c}
                         </span>
                       ))}
                     </div>
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
-                    <span className="text-[11px] font-medium text-slate-300 px-2 py-1 rounded bg-slate-950 border border-slate-800">
+                    <span className="text-[11px] font-medium text-slate-300 px-2 py-1 rounded glass-panel-subtle">
                       {row.status}
                     </span>
                   </td>
@@ -200,4 +188,3 @@ export default function HistoryPage() {
     </div>
   );
 }
-

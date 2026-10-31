@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import ScannerPage from './pages/ScannerPage';
 import HistoryPage from './pages/HistoryPage';
 import SettingsPage from './pages/SettingsPage';
+import DemoApp from './components/ui/demo';
 
 export default function App() {
   return (
@@ -13,8 +14,9 @@ export default function App() {
       <Routes>
         {/* Public Landing Page */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/demo" element={<DemoApp />} />
 
-        {/* Protected Dashboard Shell with Sidebar and Navbar */}
+        {/* Spatial Glass Dashboard Shell with Ambient 3D Anomaly Scene */}
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/scanner" element={<ScannerPage />} />
@@ -22,7 +24,7 @@ export default function App() {
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
-        {/* Catch-all redirect */}
+        {/* Catch-all redirect to Landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
