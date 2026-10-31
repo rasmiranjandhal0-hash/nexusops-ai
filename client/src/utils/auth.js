@@ -72,3 +72,4 @@ export function subscribeToAuth(callback) {
   window.addEventListener('privacyguard_auth_change', handler);
   return () => window.removeEventListener('privacyguard_auth_change', handler);
 }
+

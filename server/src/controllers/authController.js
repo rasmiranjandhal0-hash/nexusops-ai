@@ -93,3 +93,4 @@ export async function getCurrentCustomer(req, res, next) {
     return next(error);
   }
 }
+

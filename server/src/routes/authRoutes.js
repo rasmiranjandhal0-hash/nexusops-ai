@@ -12,3 +12,4 @@ router.post('/register', registerCustomer);
 router.get('/me', getCurrentCustomer);
 
 export default router;
+
