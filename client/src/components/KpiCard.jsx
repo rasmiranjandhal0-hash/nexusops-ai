@@ -30,3 +30,4 @@ export default function KpiCard({ title, value, change, icon: Icon, color = 'blu
     </div>
   );
 }
+
