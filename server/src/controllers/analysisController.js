@@ -52,8 +52,8 @@ export async function analyzeTextController(req, res, next) {
       'demo@privacyguard.ai'
     ).trim().toLowerCase();
 
-    // Execute zero-persistence privacy inspection
-    const analysis = analyzePrivacyText(trimmed);
+    // Execute zero-persistence privacy inspection (supports Gemini AI when configured)
+    const analysis = await analyzePrivacyText(trimmed);
 
     // Format risk classification
     let riskLabel = 'Low';

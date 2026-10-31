@@ -51,7 +51,8 @@ PRIVACYGUARD AI is a zero-persistence privacy and threat inspection platform. It
 | `HOST` | `0.0.0.0` | Host binding for cloud container routing |
 | `NODE_ENV` | `production` | Production environment flag |
 | `FRONTEND_URL` | `https://your-app.vercel.app` | Allowed CORS origin (or `*` for public evaluation) |
-| `AI_API_KEY` | *(Optional)* | Server-side LLM key (never exposed to client) |
+| `GEMINI_API_KEY` | *(Optional)* | Google AI Studio Gemini API Key (Server-Side Only) |
+| `GEMINI_MODEL` | `gemini-2.0-flash` | Gemini model: `gemini-2.0-flash`, `gemini-1.5-flash`, or `gemini-1.5-flash-8b` |
 | `DATABASE_URL` | *(Optional)* | Supabase PostgreSQL connection string |
 
 ---

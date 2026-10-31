@@ -1,8 +1,8 @@
 /**
  * PrivacyGuard AI - Zero-Persistence Privacy & Threat Analysis Service
  * 
- * Analyzes arbitrary text for sensitive PII, credentials, financial markers,
- * and social-engineering scam patterns without saving or logging the input.
+ * Supports both deterministic offline heuristics and live Google Gemini AI
+ * models (e.g. gemini-2.0-flash, gemini-1.5-flash, gemini-1.5-flash-8b).
  */
 
 // Helper to mask emails safely (e.g. j***@example.com)
@@ -50,18 +50,26 @@ function defangUrl(url) {
     .slice(0, 35) + '...';
 }
 
-export function analyzePrivacyText(text) {
-  if (!text || typeof text !== 'string') {
-    return {
-      riskLevel: 'LOW',
-      riskScore: 0,
-      findings: [],
-      explanation: 'No content provided for analysis.',
-      recommendedActions: ['Provide a valid text or message payload to inspect.'],
-      disclaimer: 'PRIVACYGUARD AI analysis is advisory and provided for defensive risk mitigation. It does not constitute legal counsel or definitive forensic proof of fraud.',
-    };
-  }
+/**
+ * Resolves and normalizes the Gemini model identifier
+ */
+export function resolveGeminiModel(rawModel) {
+  if (!rawModel) return 'gemini-2.0-flash';
+  const clean = rawModel.trim().toLowerCase();
+  
+  // Handle colloquial names like "3.8 flash", "flash-8b", "2.0 flash"
+  if (clean.includes('3.8') || clean.includes('8b')) return 'gemini-1.5-flash-8b';
+  if (clean.includes('2.0') || clean === 'flash' || clean === 'gemini-flash') return 'gemini-2.0-flash';
+  if (clean.includes('1.5') && clean.includes('pro')) return 'gemini-1.5-pro';
+  if (clean.includes('1.5')) return 'gemini-1.5-flash';
 
+  return rawModel.trim();
+}
+
+/**
+ * Deterministic Regex & Heuristic Engine (Always available, zero persistence)
+ */
+function analyzeWithHeuristics(text) {
   const findings = [];
   let calculatedScore = 0;
   const actions = new Set();
@@ -84,10 +92,9 @@ export function analyzePrivacyText(text) {
     actions.add('Redact personal email addresses before posting or sharing publicly.');
   }
 
-  // 2. Phone Numbers (10-digit Indian & international formatted)
+  // 2. Phone Numbers
   const phoneRegex = /(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b|\b[6-9]\d{9}\b/g;
   const rawPhones = text.match(phoneRegex) || [];
-  // Filter out timestamps or small numbers
   const phones = rawPhones.filter((p) => p.replace(/\D/g, '').length >= 10);
   if (phones.length > 0) {
     calculatedScore += Math.min(phones.length * 15, 30);
@@ -99,103 +106,100 @@ export function analyzePrivacyText(text) {
       examples: masked,
       description: 'Contact phone numbers detected, enabling targeted SMS phishing or spam.',
     });
-    reasons.push(`${phones.length} phone number(s) detected`);
-    actions.add('Mask or tokenize direct phone numbers in public tickets and prompts.');
+    reasons.push(`${phones.length} phone number(s) exposed`);
+    actions.add('Mask contact phone numbers to prevent unsolicited social engineering.');
   }
 
-  // 3. Aadhaar-like 12-digit Indian Identification Numbers
+  // 3. Aadhaar-like 12-digit numbers
   const aadhaarRegex = /\b[2-9]\d{3}[ -]?\d{4}[ -]?\d{4}\b/g;
-  const aadhaarMatches = text.match(aadhaarRegex) || [];
-  if (aadhaarMatches.length > 0) {
-    calculatedScore += 45;
-    const masked = aadhaarMatches.slice(0, 2).map(maskAadhaar);
+  const aadhaars = text.match(aadhaarRegex) || [];
+  if (aadhaars.length > 0) {
+    calculatedScore += 50;
+    const masked = aadhaars.slice(0, 2).map(maskAadhaar);
     findings.push({
       category: 'Aadhaar / National ID Pattern',
       severity: 'CRITICAL',
-      count: aadhaarMatches.length,
+      count: aadhaars.length,
       examples: masked,
-      description: 'High-sensitivity 12-digit national identity number identified.',
+      description: 'Sensitive 12-digit Indian national identity number exposed.',
     });
-    reasons.push('Aadhaar / National identity number exposed');
-    actions.add('Never transmit 12-digit Aadhaar numbers in unencrypted messages or LLM prompts.');
-    actions.add('Apply statutory Masked Aadhaar masking (showing only last 4 digits).');
+    reasons.push('High-risk Indian Aadhaar National ID detected');
+    actions.add('Immediately tokenize or mask all 12-digit national identification numbers.');
   }
 
-  // 4. PAN-like Indian Tax IDs (5 letters, 4 digits, 1 letter)
+  // 4. PAN-like IDs
   const panRegex = /\b[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}\b/g;
-  const panMatches = text.match(panRegex) || [];
-  if (panMatches.length > 0) {
-    calculatedScore += 35;
-    const masked = panMatches.slice(0, 2).map(maskPan);
-    findings.push({
-      category: 'Permanent Account Number (PAN) ID',
-      severity: 'HIGH',
-      count: panMatches.length,
-      examples: masked,
-      description: 'Indian tax identity number detected, vulnerable to identity theft.',
-    });
-    reasons.push('PAN taxpayer identifier found');
-    actions.add('Quarantine documents containing full PAN identity strings.');
-  }
-
-  // 5. Payment Card Numbers (Credit / Debit card-like sequences)
-  const cardRegex = /\b(?:\d{4}[ -]?){3}\d{4}\b/g;
-  const cardMatches = text.match(cardRegex) || [];
-  if (cardMatches.length > 0) {
-    calculatedScore += 50;
-    const masked = cardMatches.slice(0, 2).map(maskCard);
-    findings.push({
-      category: 'Payment Card Details (PCI-DSS)',
-      severity: 'CRITICAL',
-      count: cardMatches.length,
-      examples: masked,
-      description: '16-digit cardholder PAN sequence detected, violating PCI-DSS standards.',
-    });
-    reasons.push('Plaintext payment card sequence identified');
-    actions.add('Immediately purge card details and never persist CVV or full card numbers.');
-    actions.add('Use PCI-certified payment gateways for tokenized transactions.');
-  }
-
-  // 6. OTP & Password Requests / Exposures
-  const otpRegex = /\b(?:otp|one[- ]?time password|verification code|pin is|password is|cvv[:\s]*\d{3,4}|security code)\b/gi;
-  if (otpRegex.test(text)) {
+  const pans = text.match(panRegex) || [];
+  if (pans.length > 0) {
     calculatedScore += 40;
+    const masked = pans.slice(0, 2).map(maskPan);
     findings.push({
-      category: 'OTP / Credential Request or Exposure',
-      severity: 'CRITICAL',
-      count: 1,
-      examples: ['[OTP/Credential Sensitive Marker Detected]'],
-      description: 'Text explicitly references OTPs, passwords, CVV codes, or security pins.',
+      category: 'Permanent Account Number (PAN)',
+      severity: 'HIGH',
+      count: pans.length,
+      examples: masked,
+      description: 'Indian tax identity number (PAN) identified in plaintext.',
     });
-    reasons.push('Active OTP or credential request marker');
-    actions.add('Never disclose OTPs, PINs, or account passwords to anyone, even if claiming to be support.');
+    reasons.push('Indian PAN tax identification string detected');
+    actions.add('Never transmit plaintext PAN credentials across unverified channels.');
   }
 
-  // 7. Urgency, Coercion, or Scam Phrases
+  // 5. Credit / Debit Card-like numbers
+  const cardRegex = /\b(?:\d{4}[ -]?){3}\d{4}\b/g;
+  const cards = (text.match(cardRegex) || []).filter((c) => {
+    const d = c.replace(/\D/g, '');
+    return d.length >= 13 && d.length <= 19;
+  });
+  if (cards.length > 0) {
+    calculatedScore += 55;
+    const masked = cards.slice(0, 2).map(maskCard);
+    findings.push({
+      category: 'Payment Card Number (PCI-DSS)',
+      severity: 'CRITICAL',
+      count: cards.length,
+      examples: masked,
+      description: '16-digit debit or credit card sequence exposed in unencrypted text.',
+    });
+    reasons.push('Exposed credit/debit card numbers');
+    actions.add('Adhere to PCI-DSS: redact full PAN card numbers and never retain CVV strings.');
+  }
+
+  // 6. OTP / Password requests
+  const otpRegex = /\b(?:otp|one[- ]?time[- ]?password|verification[- ]?code|pin|cvv|cvc|passcode)\b/gi;
+  const otpMatches = text.match(otpRegex) || [];
+  if (otpMatches.length > 0) {
+    calculatedScore += 35;
+    findings.push({
+      category: 'OTP / Credential Request Coercion',
+      severity: 'HIGH',
+      count: otpMatches.length,
+      examples: otpMatches.slice(0, 3).map((m) => `[Referenced credential: "${m}"]`),
+      description: 'Solicitation or transmission of temporary authentication codes or CVV codes.',
+    });
+    reasons.push('Direct request for OTP or security authentication tokens');
+    actions.add('Legitimate organizations never ask for your one-time passwords (OTP) or CVV.');
+  }
+
+  // 7. Urgency / Scam Phrases
   const urgencyPatterns = [
-    /\burgent\b/i,
-    /\bwire transfer\b/i,
-    /\baccount (?:will be|has been) (?:suspended|blocked|terminated)\b/i,
-    /\bimmediate action required\b/i,
-    /\belectricity (?:will be|power) cut\b/i,
-    /\bkyc (?:update|verification|pending|expire)\b/i,
-    /\blottery winner\b/i,
-    /\bcash prize\b/i,
-    /\barrest warrant\b/i,
-    /\bdo not (?:call|verify via phone)\b/i,
-    /\bcustoms fee\b/i,
-    /\bpart-time job.*telegram\b/i,
+    /\baccount (?:suspended|blocked|locked|terminated)\b/gi,
+    /\b(?:urgent|immediately|within \d+ (?:hours?|mins?|minutes?)|act now|final notice)\b/gi,
+    /\b(?:wire transfer|crypto deposit|gift card|escrow payment|send money)\b/gi,
+    /\b(?:lottery winner|cash prize|claim reward|inheritance)\b/gi,
+    /\b(?:update kyc|kyc pending|aadhaar link|pan link)\b/gi,
   ];
 
-  const matchedUrgency = urgencyPatterns
-    .filter((regex) => regex.test(text))
-    .map((regex) => regex.source.replace(/[\\^$b]/g, '').slice(0, 25));
+  let matchedUrgency = [];
+  for (const regex of urgencyPatterns) {
+    const hits = text.match(regex);
+    if (hits) matchedUrgency = matchedUrgency.concat(hits);
+  }
 
   if (matchedUrgency.length > 0) {
-    calculatedScore += Math.min(matchedUrgency.length * 20, 45);
+    calculatedScore += 35;
     findings.push({
-      category: 'Social Engineering & Scam Indicators',
-      severity: matchedUrgency.length >= 2 ? 'CRITICAL' : 'HIGH',
+      category: 'Social Engineering & Urgent Action Coercion',
+      severity: 'HIGH',
       count: matchedUrgency.length,
       examples: matchedUrgency.slice(0, 3).map((u) => `[Trigger phrase: "${u}..."]`),
       description: 'High-pressure urgency, coercion, or financial redirection keywords identified.',
@@ -205,7 +209,7 @@ export function analyzePrivacyText(text) {
     actions.add('Do not initiate rushed financial transfers under deadline pressure.');
   }
 
-  // 8. Suspicious Links & Shorteners
+  // 8. Suspicious Links
   const urlRegex = /https?:\/\/[^\s]+/gi;
   const urls = text.match(urlRegex) || [];
   const suspiciousUrls = urls.filter((u) => {
@@ -237,10 +241,8 @@ export function analyzePrivacyText(text) {
     actions.add('Do not click short links or unverified URLs received in unsolicited messages.');
   }
 
-  // Cap score between 0 and 100
   const finalScore = Math.min(Math.max(calculatedScore, 0), 100);
 
-  // Determine Risk Level
   let riskLevel = 'LOW';
   if (finalScore >= 80) {
     riskLevel = 'CRITICAL';
@@ -255,7 +257,6 @@ export function analyzePrivacyText(text) {
     }
   }
 
-  // Synthesize Explanation
   let explanation = '';
   if (reasons.length > 0) {
     explanation = `Identified ${reasons.join(', ')}. This presents an elevated privacy and security risk requiring containment.`;
@@ -264,6 +265,7 @@ export function analyzePrivacyText(text) {
   }
 
   return {
+    engine: 'HEURISTIC_REGEX',
     riskLevel,
     riskScore: finalScore,
     findings,
@@ -273,3 +275,150 @@ export function analyzePrivacyText(text) {
   };
 }
 
+/**
+ * Live Google Gemini AI Call (Runs model specified via GEMINI_MODEL env var)
+ */
+async function analyzeWithGemini(text, apiKey, rawModelName) {
+  const model = resolveGeminiModel(rawModelName);
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+
+  const prompt = `You are PRIVACYGUARD AI, an expert privacy security auditor and threat intelligence model.
+Evaluate the following text for sensitive data exposure (PII, Aadhaar, PAN, SSN, Credit Cards, Secrets, Passwords, API keys, DB connection strings) and social engineering scam vectors (KYC phishing, bank suspension coercion, urgency pressure, fraudulent wire transfers).
+
+IMPORTANT PRIVACY RULE: Never reflect raw sensitive data in your output. Always mask any examples (e.g. XXXX-XXXX-1234 or j***@example.com).
+
+Return ONLY valid JSON matching this exact structure:
+{
+  "riskLevel": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",
+  "riskScore": <integer between 0 and 100>,
+  "explanation": "<2-3 sentence clear summary of the security/privacy risk>",
+  "findings": [
+    {
+      "category": "<Category Name>",
+      "severity": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",
+      "description": "<Why this constitutes a risk>",
+      "examples": ["<Safe masked representation>"]
+    }
+  ],
+  "recommendedActions": [
+    "<Actionable step 1>",
+    "<Actionable step 2>"
+  ]
+}
+
+Text to inspect:
+"""
+${text.slice(0, 15000)}
+"""`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [{ text: prompt }],
+          },
+        ],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
+      }),
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.warn(`[Gemini API] Request failed with HTTP ${res.status}:`, errorText.slice(0, 200));
+      return null;
+    }
+
+    const data = await res.json();
+    const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!candidateText) return null;
+
+    const parsed = JSON.parse(candidateText);
+    return {
+      engine: `GEMINI_${model.toUpperCase()}`,
+      riskLevel: parsed.riskLevel || 'MEDIUM',
+      riskScore: Math.min(Math.max(Number(parsed.riskScore) || 50, 0), 100),
+      findings: Array.isArray(parsed.findings) ? parsed.findings : [],
+      explanation: parsed.explanation || 'Analyzed via Google Gemini AI.',
+      recommendedActions: Array.isArray(parsed.recommendedActions) ? parsed.recommendedActions : [],
+      disclaimer: 'PRIVACYGUARD AI analysis is advisory and powered by Google Gemini AI. It does not constitute legal counsel or definitive forensic proof of fraud.',
+    };
+  } catch (err) {
+    clearTimeout(timeoutId);
+    console.warn('[Gemini API] Failed to invoke model, falling back to heuristics:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Main Analysis Entry Point
+ * Executes live Gemini if GEMINI_API_KEY is configured; otherwise executes zero-persistence heuristics.
+ */
+export async function analyzePrivacyText(text) {
+  if (!text || typeof text !== 'string') {
+    return {
+      riskLevel: 'LOW',
+      riskScore: 0,
+      findings: [],
+      explanation: 'No content provided for analysis.',
+      recommendedActions: ['Provide a valid text or message payload to inspect.'],
+      disclaimer: 'PRIVACYGUARD AI analysis is advisory and provided for defensive risk mitigation. It does not constitute legal counsel or definitive forensic proof of fraud.',
+    };
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
+  const rawModel = process.env.GEMINI_MODEL || process.env.AI_MODEL || 'gemini-2.0-flash';
+
+  // Always compute heuristic findings
+  const heuristicResult = analyzeWithHeuristics(text);
+
+  // If Gemini API key is configured, invoke Gemini model
+  if (apiKey && apiKey.trim().length > 5) {
+    const geminiResult = await analyzeWithGemini(text, apiKey.trim(), rawModel);
+    if (geminiResult) {
+      // Merge: take highest risk score, combine unique findings, and keep Gemini explanation
+      const combinedScore = Math.max(heuristicResult.riskScore, geminiResult.riskScore);
+      let combinedLevel = geminiResult.riskLevel;
+      if (heuristicResult.riskScore >= 80 || geminiResult.riskScore >= 80) {
+        combinedLevel = 'CRITICAL';
+      } else if (heuristicResult.riskScore >= 55 || geminiResult.riskScore >= 55) {
+        combinedLevel = 'HIGH';
+      }
+
+      // Merge findings avoiding duplicate categories
+      const existingCats = new Set(geminiResult.findings.map((f) => f.category));
+      for (const hf of heuristicResult.findings) {
+        if (!existingCats.has(hf.category)) {
+          geminiResult.findings.push(hf);
+        }
+      }
+
+      const mergedActions = Array.from(
+        new Set([...geminiResult.recommendedActions, ...heuristicResult.recommendedActions])
+      );
+
+      return {
+        ...geminiResult,
+        riskScore: combinedScore,
+        riskLevel: combinedLevel,
+        findings: geminiResult.findings,
+        recommendedActions: mergedActions,
+      };
+    }
+  }
+
+  return heuristicResult;
+}
