@@ -1,6 +1,16 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+let rawBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+
+// Automatically append '/api' if an external backend origin is passed without it
+if (rawBaseUrl.startsWith('http')) {
+  const cleanUrl = rawBaseUrl.replace(/\/+$/, '');
+  if (!cleanUrl.endsWith('/api')) {
+    rawBaseUrl = cleanUrl + '/api';
+  }
+}
+
+const API_BASE_URL = rawBaseUrl;
 
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,

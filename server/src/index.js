@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { runMigrations } from './db/migrate.js';
 import { getDbConnectionStatus, testConnection } from './db/pool.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { getGeminiModel } from './services/geminiAgentService.js';
 
 import authRoutes from './routes/authRoutes.js';
 import workspaceRoutes from './routes/workspaceRoutes.js';
@@ -80,11 +81,11 @@ app.get('/api/health', async (req, res) => {
       detail: dbStatus.connected ? `Database: ${dbStatus.database}` : (dbStatus.error || 'Running in resilient local mode'),
     },
     gemini_ai: {
-      model: 'gemini-2.5-flash',
+      model: getGeminiModel(),
       sdk: '@google/genai',
       ready: geminiConfigured,
       note: geminiConfigured
-        ? 'Real Google Gemini 2.5 Flash active'
+        ? `Real Google Gemini (${getGeminiModel()}) active`
         : 'Running in high-precision autonomous synthesis mode until GEMINI_API_KEY is supplied',
     },
   });

@@ -7,6 +7,21 @@ dotenv.config();
 const apiKey = process.env.GEMINI_API_KEY;
 let aiClient = null;
 
+const callWithTimeout = (promise, ms = 12000) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`Gemini API call timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+};
+
+export function getGeminiModel() {
+  const envModel = process.env.GEMINI_MODEL || process.env.Gemini_Model;
+  if (!envModel) return 'gemini-3.8-flash';
+  return envModel.replace(/_/g, '-').replace(/-flash$/i, '-flash').trim();
+}
+
 if (apiKey && apiKey !== 'your_google_ai_studio_gemini_api_key') {
   try {
     aiClient = new GoogleGenAI({ apiKey });
@@ -165,17 +180,21 @@ Generate the complete multi-agent orchestration plan, decision trade-off matrix,
 
   if (aiClient) {
     try {
-      console.log('[Gemini Service] Sending multi-agent orchestration request to gemini-2.5-flash...');
-      const response = await aiClient.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: promptText,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          responseMimeType: 'application/json',
-          responseSchema: MISSION_RESPONSE_SCHEMA,
-          temperature: 0.2,
-        },
-      });
+      const selectedModel = getGeminiModel();
+      console.log(`[Gemini Service] Sending multi-agent orchestration request to ${selectedModel}...`);
+      const response = await callWithTimeout(
+        aiClient.models.generateContent({
+          model: selectedModel,
+          contents: promptText,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            responseMimeType: 'application/json',
+            responseSchema: MISSION_RESPONSE_SCHEMA,
+            temperature: 0.2,
+          },
+        }),
+        12000
+      );
 
       const rawJson = response.text();
       const parsedData = JSON.parse(rawJson);
@@ -206,17 +225,21 @@ Re-evaluate the workflow, explain the self-healing adaptation strategy, and outp
 
   if (aiClient) {
     try {
-      console.log('[Gemini Service] Sending self-healing re-planning request to gemini-2.5-flash...');
-      const response = await aiClient.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: promptText,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          responseMimeType: 'application/json',
-          responseSchema: MISSION_RESPONSE_SCHEMA,
-          temperature: 0.2,
-        },
-      });
+      const selectedModel = getGeminiModel();
+      console.log(`[Gemini Service] Sending self-healing re-planning request to ${selectedModel}...`);
+      const response = await callWithTimeout(
+        aiClient.models.generateContent({
+          model: selectedModel,
+          contents: promptText,
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            responseMimeType: 'application/json',
+            responseSchema: MISSION_RESPONSE_SCHEMA,
+            temperature: 0.2,
+          },
+        }),
+        12000
+      );
 
       const rawJson = response.text();
       const parsedData = JSON.parse(rawJson);
